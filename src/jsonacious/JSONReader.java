@@ -1,6 +1,5 @@
 package jsonacious;
 
-import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.IOException;
@@ -11,60 +10,6 @@ import java.util.*;
  */
 public class JSONReader
 {
-
-    public static void main( String[] args )
-        throws Exception
-	{
-		JSONReader crunk = new JSONReader();
-		String payload =
-			"{ " +
-//			"'A' : 'apple', \n" +
-//			"'B' : \"null\", \n" +
-//			"'C' : 'code', \n" +
-//			"'D' : {}, \n" +
-//			"'E' : { 'Z1' : 'zebra' }, \n" +
-//			"'F' : '\\u0048\\u0065\\u006C\\u006C\\u006F World', \n" +
-//			"'G' : null, \n" +
-//			"'H' : true, \n" +
-//			"'I' : false, \n" +
-//			"'J' : [], \n" +
-//			"'K' : [ 'one', 'two' ] \n" +
-//			"'L' : [ { 'side' : 'left' }, { 'side' : 'right' } ], \n" +
-//			"'M' : [ ['one', 'two'], ['three','four' ], \n" +
-			"'N' : -123.789, \n" +
-			"'O' : [ 123, 0, -1, 9223372036854775807, 1.7976931348623157E308 ] \n" +
-
-			"} ";
-
-		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/johannson/data/whatever.json" );
-		StringBuilder sb = new StringBuilder();
-		while( true )
-		{
-			int c = reader.read();
-			if( c == -1 ) break;
-			sb.append( (char) c );
-		}
-		payload = sb.toString();
-
-		StringReader sparky = new StringReader( payload );
-		sparky.reset();
-
-		long start = System.currentTimeMillis();
-		int reps = 23809;
-		for( int n = 0; n < reps; n++ )
-		{
-			Map map = crunk.parse( sparky );
-//			Map map = crunk.parse( payload );
-			sparky.reset();
-
-		}
-		long elapsed = System.currentTimeMillis() - start;
-
-//		System.out.println( map );
-		System.out.printf( "elapsed: %d \n", elapsed );
-		System.out.printf( "each: %f \n", (double) elapsed / (double) reps );
-	}
-
 	public Map<String, Object> parse( String payload )
 		throws IOException
 	{
@@ -75,6 +20,12 @@ public class JSONReader
 	public Map<String, Object> parse( Reader reader )
 		throws IOException
 	{
+		nth = 0;
+		line = 0;
+		pos = 0;
+		last = 0;
+		back = false;
+
 		while( true )
 		{
 			int c = read( reader );
@@ -101,95 +52,20 @@ public class JSONReader
 		}
 	}
 
-	static class NullMap implements Map
-	{
-
-		@Override
-		public int size()
-		{
-			return 0;
-		}
-
-		@Override
-		public boolean isEmpty()
-		{
-			return false;
-		}
-
-		@Override
-		public boolean containsKey( Object key )
-		{
-			return false;
-		}
-
-		@Override
-		public boolean containsValue( Object value )
-		{
-			return false;
-		}
-
-		@Override
-		public Object get( Object key )
-		{
-			return null;
-		}
-
-		@Override
-		public Object put( Object key, Object value )
-		{
-			return null;
-		}
-
-		@Override
-		public Object remove( Object key )
-		{
-			return null;
-		}
-
-		@Override
-		public void putAll( Map m )
-		{
-
-		}
-
-		@Override
-		public void clear()
-		{
-
-		}
-
-		@Override
-		public Set keySet()
-		{
-			return null;
-		}
-
-		@Override
-		public Collection values()
-		{
-			return null;
-		}
-
-		@Override
-		public Set<Entry> entrySet()
-		{
-			return null;
-		}
-	}
-
-	static Map<String, Object> NULL_MAP = new NullMap();
-
+	/**
+	 * Override this method to use a different Map implementation. eg LinkedHashMap
+	 * would preserve file order. ArrayMap would be more space efficient.
+	 *
+	 * @return
+	 */
 	public Map<String, Object> createMap()
 	{
-//		return NULL_MAP;
 		return new HashMap<String, Object>();
 	}
 
 	public Map<String, Object> parseMap( Reader reader )
 		throws IOException
 	{
-//		Map<String, Object> parent = new HashMap<>();
-//		Map<String, Object> parent = new LinkedHashMap<>();
 		Map<String, Object> parent = createMap();
 
 		String key = null;
@@ -302,8 +178,7 @@ public class JSONReader
 	public List<Object> parseList( Reader reader )
 		throws IOException
 	{
-//		List<Object> parent = new ArrayList<>();
-		List<Object> parent = createArray();
+		List<Object> parent = createList();
 
 		int c = 0;
 
@@ -395,157 +270,18 @@ public class JSONReader
 		return parent;
 	}
 
-	static class NullList<T> implements List
-	{
-
-		@Override
-		public int size()
-		{
-			return 0;
-		}
-
-		@Override
-		public boolean isEmpty()
-		{
-			return false;
-		}
-
-		@Override
-		public boolean contains( Object o )
-		{
-			return false;
-		}
-
-		@Override
-		public Iterator iterator()
-		{
-			return null;
-		}
-
-		@Override
-		public Object[] toArray()
-		{
-			return new Object[ 0 ];
-		}
-
-		@Override
-		public boolean add( Object o )
-		{
-			return false;
-		}
-
-		@Override
-		public boolean remove( Object o )
-		{
-			return false;
-		}
-
-		@Override
-		public boolean addAll( Collection c )
-		{
-			return false;
-		}
-
-		@Override
-		public boolean addAll( int index, Collection c )
-		{
-			return false;
-		}
-
-		@Override
-		public void clear()
-		{
-
-		}
-
-		@Override
-		public Object get( int index )
-		{
-			return null;
-		}
-
-		@Override
-		public Object set( int index, Object element )
-		{
-			return null;
-		}
-
-		@Override
-		public void add( int index, Object element )
-		{
-
-		}
-
-		@Override
-		public Object remove( int index )
-		{
-			return null;
-		}
-
-		@Override
-		public int indexOf( Object o )
-		{
-			return 0;
-		}
-
-		@Override
-		public int lastIndexOf( Object o )
-		{
-			return 0;
-		}
-
-		@Override
-		public ListIterator listIterator()
-		{
-			return null;
-		}
-
-		@Override
-		public ListIterator listIterator( int index )
-		{
-			return null;
-		}
-
-		@Override
-		public List subList( int fromIndex, int toIndex )
-		{
-			return null;
-		}
-
-		@Override
-		public boolean retainAll( Collection c )
-		{
-			return false;
-		}
-
-		@Override
-		public boolean removeAll( Collection c )
-		{
-			return false;
-		}
-
-		@Override
-		public boolean containsAll( Collection c )
-		{
-			return false;
-		}
-
-		@Override
-		public T[] toArray( Object[] a )
-		{
-			return null;
-		}
-	}
-
-	static List<Object> NULL_LIST = new NullList();
-
-	private List<Object> createArray()
+	/**
+	 * Override this method to use a different List implementation. For whatever reason.
+	 *
+	 * @return
+	 */
+	private List<Object> createList()
 	{
 		return new ArrayList<Object>();
-//		return NULL_LIST;
 	}
 
 	StringBuilder sb = new StringBuilder();
+
 	public String readString( int delim, Reader reader )
 		throws IOException
 	{
@@ -714,12 +450,6 @@ public class JSONReader
 			}
 		}
 		return result;
-	}
-
-	// http://stackoverflow.com/questions/1078953/check-if-bigdecimal-is-integer-value
-	boolean isIntegerValue( BigDecimal bd )
-	{
-		return bd.signum() == 0 || bd.scale() <= 0 || bd.stripTrailingZeros().scale() <= 0;
 	}
 
 	public int readHex( Reader reader )
