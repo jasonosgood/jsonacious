@@ -248,4 +248,86 @@ extends
 		return NULL_LIST;
 	}
 
+//	public void fill() {}
+
+
+	public String readString( int delim )
+		throws IOException
+	{
+		char c;
+		while( (  c = read() ) != delim )
+		{
+			switch( c )
+			{
+				case '\\':
+				{
+					switch( c )
+					{
+						case '"':
+						case '/':
+						case '\\':
+						case 'b':
+						case 'f':
+						case 'n':
+						case 'r':
+						case 't':
+						case 'u':
+							break;
+
+						default:
+							throw new IOException( "what is '\\" + (char) c + "'?" );
+					}
+
+					break;
+				}
+
+
+				case (char) -1:
+				{
+					throw new IOException( "unexpected end of file" );
+				}
+				default:
+					break;
+			}
+		}
+		return "";
+	}
+
+
+	public Number readNumber( char c )
+		throws IOException
+	{
+		loop:
+		while( true )
+		{
+			int d = read();
+			switch( d )
+			{
+				case '.':
+				case '-':
+				case '+':
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+				case 'E':
+				case 'e':
+					break;
+
+				case -1:
+					throw new IOException( "unexpected end of file" );
+
+				default:
+					break loop;
+			}
+		}
+		return 1;
+	}
+
 }

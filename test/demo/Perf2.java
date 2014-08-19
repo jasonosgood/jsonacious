@@ -15,7 +15,7 @@ public class Perf2
     public static void main( String[] args )
         throws Exception
 	{
-		JSONReader jsonReader = new JSONNullReader();
+		JSONNullReader jsonReader = new JSONNullReader();
 
 		FileReader reader = new FileReader( "./data/whatever.json" );
 		StringBuilder sb = new StringBuilder();
@@ -30,18 +30,23 @@ public class Perf2
 		StringReader sparky = new StringReader( payload );
 		sparky.reset();
 
-		long start = System.currentTimeMillis();
-		int reps = 23809;
-		for( int n = 0; n < reps; n++ )
+		long start = 0;
+		int reps = 100000;
+		int warmup = 50000;
+		for( int n = 0; n < reps + warmup; n++ )
 		{
+			if( n ==  warmup)
+			{
+				start = System.currentTimeMillis();
+			}
 			Map map = jsonReader.parse( sparky );
 			sparky.reset();
-
 		}
 		long elapsed = System.currentTimeMillis() - start;
 
 		System.out.printf( "elapsed: %d msec \n", elapsed );
 		System.out.printf( "each: %f msec \n", (double) elapsed / (double) reps );
+
 	}
 
 
