@@ -1,7 +1,7 @@
 JSONacious
 ==========
 
-Simple, fast JSON Reader. Converts input into graph of maps and lists. 
+JSONReader converts JSON text input into graph of maps and lists. 
 
     import jsonacious.JSONReader;
     import java.util.Map;

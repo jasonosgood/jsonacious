@@ -1,6 +1,5 @@
 package jsonacious;
 
-import java.io.BufferedReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.IOException;
@@ -9,7 +8,7 @@ import java.util.*;
 
 /**
  */
-public class JSONReader
+public class JSONReaderZ
 {
 	public Map<String, Object> parse( String payload )
 		throws IOException
@@ -18,23 +17,31 @@ public class JSONReader
 		return parse( reader );
 	}
 
+	Reader reader = null;
 	public Map<String, Object> parse( Reader reader )
 		throws IOException
 	{
+		this.reader = reader;
+
+		mark = -1;
 		nth = 0;
 		line = 0;
 		pos = 0;
 		last = 0;
 		back = false;
+		marked = false;
+		limit = 0;
 
 		while( true )
 		{
-			int c = read( reader );
+			char c = read();
 
 			switch( c )
 			{
 				case '{':
-					return parseMap( reader );
+					Map map = parseMap();
+					return map;
+
 
 				// whitespace
 				case ' ':
@@ -43,7 +50,7 @@ public class JSONReader
 				case '\n':
 					break;
 
-				case -1:
+				case (char) -1:
 					return new HashMap<>();
 
 				default:
@@ -64,34 +71,34 @@ public class JSONReader
 		return new HashMap<String, Object>();
 	}
 
-	public Map<String, Object> parseMap( Reader reader )
+	public Map<String, Object> parseMap()
 		throws IOException
 	{
 		Map<String, Object> parent = createMap();
 
 		String key = null;
-		int c = 0;
+		char c = 0;
 
-        while( (  c = read( reader ) ) != -1 )
-        {
-            switch( c )
-            {
-                case '{':
+		while( (  c = read() ) != -1 )
+		{
+			switch( c )
+			{
+				case '{':
 				{
-					Map<String, Object> child = parseMap( reader );
+					Map<String, Object> child = parseMap();
 					parent.put( key, child );
 					key = null;
 					break;
 				}
 
-                case '}':
+				case '}':
 				{
 					return parent;
 				}
 
- 				case '[':
+				case '[':
 				{
-					List<Object> child = parseList( reader );
+					List<Object> child = parseList();
 					parent.put( key, child );
 					key = null;
 					break;
@@ -99,7 +106,7 @@ public class JSONReader
 
 				case '\'':
 				case '"':
-					String value = readString( c, reader );
+					String value = readString( c );
 					if( key == null )
 					{
 						key = value;
@@ -110,7 +117,7 @@ public class JSONReader
 						key = null;
 					}
 
-                    break;
+					break;
 
 				case ':':
 					break;
@@ -119,26 +126,26 @@ public class JSONReader
 					break;
 
 				case 'n':
-					consume( reader, 'u' );
-					consume( reader, 'l' );
-					consume( reader, 'l' );
+					consume( 'u' );
+					consume( 'l' );
+					consume( 'l' );
 					parent.put( key, null );
 					key = null;
 					break;
 
 				case 't':
-					consume( reader, 'r' );
-					consume( reader, 'u' );
-					consume( reader, 'e' );
+					consume( 'r' );
+					consume( 'u' );
+					consume( 'e' );
 					parent.put( key, true );
 					key = null;
 					break;
 
 				case 'f':
-					consume( reader, 'a' );
-					consume( reader, 'l' );
-					consume( reader, 's' );
-					consume( reader, 'e' );
+					consume( 'a' );
+					consume( 'l' );
+					consume( 's' );
+					consume( 'e' );
 					parent.put( key, false );
 					key = null;
 					break;
@@ -154,12 +161,12 @@ public class JSONReader
 				case '7':
 				case '8':
 				case '9':
-					Number number = readNumber( c, reader );
+					Number number = readNumber( c );
 					parent.put( key, number );
 					key = null;
 					break;
 
-					// whitespace
+				// whitespace
 				case ' ':
 				case '\t':
 				case '\r':
@@ -169,34 +176,34 @@ public class JSONReader
 				default:
 					// TODO Something went wrong
 
-                    break;
+					break;
 
-            }
-        }
+			}
+		}
 		return parent;
-    }
+	}
 
-	public List<Object> parseList( Reader reader )
+	public List<Object> parseList()
 		throws IOException
 	{
 		List<Object> parent = createList();
 
-		int c = 0;
+		char c = 0;
 
-		while( (  c = read( reader ) ) != -1 )
+		while( (  c = read() ) != -1 )
 		{
 			switch( c )
 			{
 				case '{':
 				{
-					Map<String, Object> child = parseMap( reader );
+					Map<String, Object> child = parseMap();
 					parent.add( child );
 					break;
 				}
 
 				case '[':
 				{
-					List<Object> child = parseList( reader );
+					List<Object> child = parseList();
 					parent.add( child );
 					break;
 				}
@@ -209,7 +216,7 @@ public class JSONReader
 
 				case '\'':
 				case '"':
-					String value = readString( c, reader );
+					String value = readString( c );
 					parent.add( value );
 
 					break;
@@ -218,24 +225,24 @@ public class JSONReader
 					break;
 
 				case 'n':
-					consume( reader, 'u' );
-					consume( reader, 'l' );
-					consume( reader, 'l' );
+					consume( 'u' );
+					consume( 'l' );
+					consume( 'l' );
 					parent.add( null );
 					break;
 
 				case 't':
-					consume( reader, 'r' );
-					consume( reader, 'u' );
-					consume( reader, 'e' );
+					consume( 'r' );
+					consume( 'u' );
+					consume( 'e' );
 					parent.add( true );
 					break;
 
 				case 'f':
-					consume( reader, 'a' );
-					consume( reader, 'l' );
-					consume( reader, 's' );
-					consume( reader, 'e' );
+					consume( 'a' );
+					consume( 'l' );
+					consume( 's' );
+					consume( 'e' );
 					parent.add( false );
 					break;
 
@@ -250,7 +257,7 @@ public class JSONReader
 				case '7':
 				case '8':
 				case '9':
-					Number number = readNumber( c, reader );
+					Number number = readNumber( c );
 					parent.add( number );
 					break;
 
@@ -283,18 +290,21 @@ public class JSONReader
 
 	StringBuilder sb = new StringBuilder();
 
-	public String readString( int delim, Reader reader )
+	public String readString( int delim )
 		throws IOException
 	{
-		int c;
+		char c;
 		sb.setLength( 0 );
-		while( (  c = read( reader ) ) != delim )
+		mark();
+		while( (  c = read() ) != delim )
 		{
 			switch( c )
 			{
 				case '\\':
 				{
-					c = read( reader );
+					fill();
+					unmark();
+					c = read();
 					switch( c )
 					{
 						case '"':
@@ -336,10 +346,10 @@ public class JSONReader
 //								readHex( reader ) << 4 +
 //								readHex( reader );
 							int hex =
-								readHex( reader ) << 12;
-							hex += readHex( reader ) << 8;
-							hex += readHex( reader ) << 4;
-							hex += readHex( reader );
+								readHex() << 12;
+								hex += readHex() << 8;
+								hex += readHex() << 4;
+								hex += readHex();
 //							System.out.println( " = " + hex );
 							sb.append( (char) hex );
 
@@ -348,31 +358,37 @@ public class JSONReader
 						default:
 							throw new IOException( "what is '\\" + (char) c + "'?" );
 					}
+
+					mark();
+
 					break;
 				}
 
-				case -1:
+
+				case (char) -1:
 				{
 					throw new IOException( "unexpected end of file" );
 				}
 				default:
-					sb.append( (char) c );
 					break;
 			}
 		}
+		fill();
+		unmark();
 		return sb.toString();
 	}
 
-	public Number readNumber( int c, Reader reader )
+	public Number readNumber( char c )
 		throws IOException
 	{
 		sb.setLength( 0 );
 		sb.append( (char) c );
+		mark();
 		boolean decimal = false;
 		loop:
 		while( true )
 		{
-			int d = read( reader );
+			int d = read();
 			switch( d )
 			{
 				case '.':
@@ -391,17 +407,18 @@ public class JSONReader
 				case '9':
 				case 'E':
 				case 'e':
-					sb.append( (char) d );
 					break;
 
 				case -1:
 					throw new IOException( "unexpected end of file" );
 
 				default:
-					pushBack();
 					break loop;
 			}
 		}
+		fill();
+		unmark();
+		pushBack();
 
 		Number result = null;
 		String value = sb.toString();
@@ -452,10 +469,10 @@ public class JSONReader
 		return result;
 	}
 
-	public int readHex( Reader reader )
+	public int readHex()
 		throws IOException
 	{
-		int x = read( reader );
+		int x = read();
 		if( x >= '0' && x <= '9' )
 		{
 //			System.out.print( x - '0' );
@@ -474,35 +491,54 @@ public class JSONReader
 		throw new IOException( "not a hex digit " + (char) x );
 	}
 
-	public void consume( Reader reader, char e )
+	public void consume( char e )
 		throws IOException
 	{
-		char c = (char) read( reader );
+		char c = read();
 		if( c != e )
 		{
 			throw new IOException( "expected '" + e + "', found '" + c + "'" );
 		}
 	}
 
+	int mark = -1;
 	int nth = 0;
 	int line = 0;
 	int pos = 0;
-	int last = 0;
+	char last = 0;
+	int limit = 0;
 
+	final static int SIZE = 512;
+	char[] buf = new char[SIZE];
 	/**
 	 * Tracks character count, line count, line position.
 	 *
-	 * @param reader
-	 * @return
-	 * @throws IOException
 	 */
-	int read( Reader reader )
+	char read()
 		throws IOException
 	{
-		int c = back ? last : reader.read();
-		back = false;
+
+		char c = 0;
+		if( back )
+		{
+			c = last;
+			back = false;
+		}
+		else
+		{
+			if( nth == limit )
+			{
+				nth++;
+				fill();
+				limit = reader.read( buf, 0, SIZE );
+				nth = 0;
+				mark = 0;
+			}
+			c = buf[ nth ];
+		}
 
 		nth++;
+
 		if( c == '\n' || c == '\r' )
 		{
 			line++;
@@ -530,5 +566,24 @@ public class JSONReader
 		back = true;
 	}
 
+	boolean marked = false;
+	void mark()
+	{
+		mark = nth;
+		marked = true;
+	}
 
+	void unmark()
+	{
+		mark = -1;
+		marked = false;
+	}
+
+	void fill()
+	{
+		if( marked && mark < nth )
+		{
+			sb.append( buf, mark, nth - mark - 1 );
+		}
+	}
 }
