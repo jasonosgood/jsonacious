@@ -17,7 +17,7 @@ public class Perf2
 	{
 		JSONNullReader jsonReader = new JSONNullReader();
 
-		FileReader reader = new FileReader( "./data/whatever.json" );
+		FileReader reader = new FileReader( "./data/whatever.json.pwd" );
 		StringBuilder sb = new StringBuilder();
 		while( true )
 		{

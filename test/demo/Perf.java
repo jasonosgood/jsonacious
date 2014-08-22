@@ -16,7 +16,7 @@ public class Perf
 	{
 		JSONReader jsonReader = new JSONReader();
 //
-		FileReader reader = new FileReader( "./data/whatever.json" );
+		FileReader reader = new FileReader( "./data/whatever.json.pwd" );
 		StringBuilder sb = new StringBuilder();
 		while( true )
 		{
