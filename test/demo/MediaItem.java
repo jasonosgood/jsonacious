@@ -34,9 +34,6 @@ public class MediaItem
     public Content getContent() { return _content; }
     public void setContent(Content c) { _content = c; }
 
-	public boolean getJasoN() { return false; }
-	public boolean getJason() { return false; }
-
     /*
     /**********************************************************
     /* Helper types
@@ -153,8 +150,17 @@ public class MediaItem
         public void setPlayer(Player p) { _player = p; }
         public void setUri(String u) {  _uri = u; }
         public void setTitle(String t) {  _title = t; }
-        public void setWidth(int w) {  _width = w; }
-        public void setHeight(int h) {  _height = h; }
+        public void setWidth(int w) {
+			_width = w;
+		}
+        public void setHeight(int h) {
+			_height = h;
+		}
+		public void setHeight( int h, int spare )
+		{
+			_height = h;
+
+		}
         public void setFormat(String f) {  _format = f;  }
         public void setDuration(long d) {  _duration = d; }
         public void setSize(long s) {  _size = s; }

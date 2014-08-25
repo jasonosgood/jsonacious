@@ -79,6 +79,11 @@ public class JSONDecoder
 		}
 	}
 
+//	public <V> List<V> createList( Class<V> listClass )
+//	{
+//		return new ArrayList<Object>();
+//	}
+
 	public <T> T parseMap( Class<T> parentClazz )
 		throws IOException, MethodNotFoundException
 	{
@@ -232,6 +237,7 @@ public class JSONDecoder
 
 		// TODO: Pass in list class to be created
 		List<U> parent = new ArrayList<U>();
+//		List<U> parent = createList();
 
 		char c = 0;
 
@@ -698,8 +704,10 @@ public class JSONDecoder
 		if( y instanceof ParameterizedType )
 		{
 			ParameterizedType duff = (ParameterizedType) y;
-			Type owner = duff.getRawType();
-			return (Class) owner;
+			Type[] actual = duff.getActualTypeArguments();
+			return (Class) actual[0];
+//			Type owner = duff.getRawType();
+//			return (Class) owner;
 		}
 		else
 		{

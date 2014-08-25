@@ -283,7 +283,7 @@ public class JSONReader
 	 *
 	 * @return
 	 */
-	private List<Object> createList()
+	public List<Object> createList()
 	{
 		return new ArrayList<Object>();
 	}

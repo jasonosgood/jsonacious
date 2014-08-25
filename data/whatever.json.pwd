@@ -1,9 +1,28 @@
-{"photos": [
+{"content": {
+    "height": 120,
+    "uri": "http://whatever.biz",
+    "title": "Performance micro-benchmark, to be run manually\\u0064",
+    "width": 900,
+    "format": null,
+    "duration": 3600000,
+    "size": 0,
+    "bitrate": 256000,
+    "copyright": "none",
+    "player": "FLASH",
+    "persons": ["William", "Robert"]
+}, "photos": [
     {
         "uri": "http://a.com",
         "title": "title1",
         "width": 200,
         "height": 100,
         "size": "LARGE"
+    },
+    {
+        "uri": "http://b.org",
+        "title": "title2",
+        "width": 640,
+        "height": 480,
+        "size": "SMALL"
     }
 ]}
