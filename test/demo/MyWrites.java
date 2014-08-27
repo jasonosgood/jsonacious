@@ -36,24 +36,24 @@ public class MyWrites
 
 		System.out.println( sw.toString() );
 
-		long start = System.currentTimeMillis();
-		int reps = 100000;
-		int warmup = 50000;
-		for( int n = 0; n < reps + warmup; n++ )
-		{
-			if( n ==  warmup)
-			{
-				start = System.currentTimeMillis();
-			}
-			StringWriter sw2 = new StringWriter();
-			writer.setWriter( sw2 );
-
-			writer.write( map );
-		}
-		long elapsed = System.currentTimeMillis() - start;
-
-		System.out.printf( "elapsed: %d msec \n", elapsed );
-		System.out.printf( "each: %f msec \n", (double) elapsed / (double) reps );
+//		long start = System.currentTimeMillis();
+//		int reps = 100000;
+//		int warmup = 50000;
+//		for( int n = 0; n < reps + warmup; n++ )
+//		{
+//			if( n ==  warmup)
+//			{
+//				start = System.currentTimeMillis();
+//			}
+//			StringWriter sw2 = new StringWriter();
+//			writer.setWriter( sw2 );
+//
+//			writer.write( map );
+//		}
+//		long elapsed = System.currentTimeMillis() - start;
+//
+//		System.out.printf( "elapsed: %d msec \n", elapsed );
+//		System.out.printf( "each: %f msec \n", (double) elapsed / (double) reps );
 
 	}
 }

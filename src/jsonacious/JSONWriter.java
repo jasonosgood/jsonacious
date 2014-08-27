@@ -34,57 +34,135 @@ public class
 	public void write( Map<String, Object> map )
 		throws IOException
 	{
-		writer.append( '{' );
-		writer.append( '\n' );
+		leftSquiggle();
 		boolean second = false;
 		for( Map.Entry<String,Object> entry : map.entrySet() )
 		{
 			if( second )
 			{
-				writer.append( ',' );
-				writer.append( '\n' );
-
+				comma();
 			}
 			else
 			{
 				second = true;
 			}
+			tabs();
 			writer.append( '"' );
 			writer.append( entry.getKey() );
 			writer.append( '"' );
-			writer.append( ':' );
+			colon();
 
 			Object value = entry.getValue();
 			writeValue( value );
 		}
-		writer.append( '}' );
+		rightSquiggle();
+	}
+
+	boolean pretty = true;
+	int tabs = 0;
+
+	void newline()
+		throws IOException
+	{
+		if( !pretty ) return;
 		writer.append( '\n' );
 	}
+
+	void tabs()
+		throws IOException
+	{
+		if( !pretty ) return;
+		for( int x = 0; x < tabs; x++ )
+			writer.append( '\t' );
+	}
+
+	void leftSquiggle()
+		throws IOException
+	{
+		newline();
+		tabs();
+		writer.append( '{' );
+		tabs++;
+		newline();
+	}
+
+	void rightSquiggle() throws
+		IOException
+	{
+		newline();
+		tabs--;
+		tabs();
+		writer.append( '}' );
+		newline();
+	}
+
+
+	void leftSquare()
+		throws IOException
+	{
+		newline();
+		tabs++;
+		tabs();
+		writer.append( '[' );
+		tabs++;
+		newline();
+	}
+
+	void rightSquare() throws
+		IOException
+	{
+		newline();
+		tabs--;
+		tabs();
+		writer.append( ']' );
+		tabs--;
+		newline();
+	}
+
+	void comma() throws
+		IOException
+	{
+		writer.append( ',' );
+		newline();
+	}
+
+	void colon() throws
+		IOException
+	{
+		if( pretty )
+		{
+			writer.append( ' ' );
+			writer.append( ':' );
+			writer.append( ' ' );
+		}
+		else
+		{
+			writer.append( ':' );
+		}
+	}
+
 
 	void write( Collection collection )
 		throws IOException
 	{
-		writer.append( '[' );
-		writer.append( '\n' );
+		leftSquare();
 
 		boolean second = false;
 		for( Object value : collection )
 		{
 			if( second )
 			{
-				writer.append( ',' );
-				writer.append( '\n' );
-
+				comma();
 			}
 			else
 			{
 				second = true;
 			}
+			tabs();
 			writeValue( value );
 		}
-		writer.append( ']' );
-		writer.append( '\n' );
 
+		rightSquare();
 	}
 
 	void writeValue( Object value )
@@ -117,8 +195,8 @@ public class
 		else
 		{
 			writer.append( '"' );
-//			escapeChar( writer, value.toString() );
-			writer.append( value.toString() );
+			escapeChar( writer, value.toString() );
+//			writer.append( value.toString() );
 			writer.append( '"' );
 		}
 	}
@@ -197,6 +275,7 @@ public class
 						break;
 
 					default:
+						w.append( c );
 						break;
 				}
 			}
