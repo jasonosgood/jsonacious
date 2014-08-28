@@ -35,7 +35,9 @@ public class
 		throws IOException
 	{
 		leftSquiggle();
+
 		boolean second = false;
+
 		for( Map.Entry<String,Object> entry : map.entrySet() )
 		{
 			if( second )
@@ -53,27 +55,104 @@ public class
 			colon();
 
 			Object value = entry.getValue();
-			writeValue( value );
+			writeValue( value, false );
 		}
+
 		rightSquiggle();
+	}
+
+	void write( Collection collection )
+		throws IOException
+	{
+		leftSquare();
+
+		boolean second = false;
+		for( Object value : collection )
+		{
+			if( second )
+			{
+				comma();
+			}
+			else
+			{
+				second = true;
+			}
+			writeValue( value, true );
+		}
+
+		rightSquare();
+	}
+
+	void writeValue( Object value, boolean list )
+		throws IOException
+	{
+		if( value == null )
+		{
+			if( list ) tabs();
+			writer.append( null );
+		}
+		else
+		if( value instanceof Boolean )
+		{
+			if( list ) tabs();
+			writer.append( ((Boolean) value).booleanValue() ? "true" : "false" );
+		}
+		else
+		if( value instanceof Number )
+		{
+			if( list ) tabs();
+			writer.append( ((Number) value).toString() );
+		}
+		else
+		if( value instanceof Collection )
+		{
+			write( (Collection) value );
+		}
+		else
+		if( value instanceof Map )
+		{
+			write( (Map) value );
+		}
+		else
+		{
+			if( list ) tabs();
+			writer.append( '"' );
+			escapeChar( writer, value.toString() );
+			writer.append( '"' );
+		}
 	}
 
 	boolean pretty = true;
 	int tabs = 0;
 
+	boolean skipNewline = true;
+
 	void newline()
 		throws IOException
 	{
 		if( !pretty ) return;
+		if( skipNewline )
+		{
+			skipNewline = false;
+			return;
+		}
 		writer.append( '\n' );
+		skipNewline = true;
 	}
 
 	void tabs()
 		throws IOException
 	{
 		if( !pretty ) return;
+		skipNewline = false;
 		for( int x = 0; x < tabs; x++ )
+		{
 			writer.append( '\t' );
+//			writer.append( ' ' );
+//			writer.append( ' ' );
+//			writer.append( ' ' );
+//			writer.append( '|' );
+		}
 	}
 
 	void leftSquiggle()
@@ -82,41 +161,36 @@ public class
 		newline();
 		tabs();
 		writer.append( '{' );
-		tabs++;
 		newline();
+		tabs++;
 	}
 
 	void rightSquiggle() throws
 		IOException
 	{
-		newline();
 		tabs--;
+		newline();
 		tabs();
 		writer.append( '}' );
-		newline();
 	}
-
 
 	void leftSquare()
 		throws IOException
 	{
 		newline();
-		tabs++;
 		tabs();
 		writer.append( '[' );
-		tabs++;
 		newline();
+		tabs++;
 	}
 
 	void rightSquare() throws
 		IOException
 	{
-		newline();
 		tabs--;
+		newline();
 		tabs();
 		writer.append( ']' );
-		tabs--;
-		newline();
 	}
 
 	void comma() throws
@@ -138,66 +212,6 @@ public class
 		else
 		{
 			writer.append( ':' );
-		}
-	}
-
-
-	void write( Collection collection )
-		throws IOException
-	{
-		leftSquare();
-
-		boolean second = false;
-		for( Object value : collection )
-		{
-			if( second )
-			{
-				comma();
-			}
-			else
-			{
-				second = true;
-			}
-			tabs();
-			writeValue( value );
-		}
-
-		rightSquare();
-	}
-
-	void writeValue( Object value )
-		throws IOException
-	{
-		if( value == null )
-		{
-			writer.append( null );
-		}
-		else
-		if( value instanceof Boolean )
-		{
-			writer.append( ((Boolean) value).booleanValue() ? "true" : "false" );
-		}
-		else
-		if( value instanceof Number )
-		{
-			writer.append( ((Number) value).toString() );
-		}
-		else
-		if( value instanceof Collection )
-		{
-			write( (Collection) value );
-		}
-		else
-		if( value instanceof Map )
-		{
-			write( (Map) value );
-		}
-		else
-		{
-			writer.append( '"' );
-			escapeChar( writer, value.toString() );
-//			writer.append( value.toString() );
-			writer.append( '"' );
 		}
 	}
 
