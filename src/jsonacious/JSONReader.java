@@ -570,23 +570,23 @@ public class JSONReader
 
 		nth++;
 
-		if( c == '\n' || c == '\r' )
-		{
-			line++;
-			pos = 0;
-		}
-		else
-		{
-			pos++;
-		}
+//		if( c == '\n' || c == '\r' )
+//		{
+//			line++;
+//			pos = 0;
+//		}
+//		else
+//		{
+//			pos++;
+//		}
+//
+//		if( c == '\n' && last == '\r' )
+//			line--;
+//
+//		if( c == '\r' && last == '\n')
+//			line--;
 
-		if( c == '\n' && last == '\r' )
-			line--;
-
-		if( c == '\r' && last == '\n')
-			line--;
-
-		last = c;
+//		last = c;
 
 		return c;
 	}

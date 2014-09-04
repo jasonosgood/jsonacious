@@ -1,22 +1,22 @@
 package jsonacious;
 
 import com.esotericsoftware.reflectasm.ConstructorAccess;
-import com.esotericsoftware.reflectasm.MethodAccess;
-import com.esotericsoftware.reflectasm.FieldAccess;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  */
-public class JSONDecoder
+public class JSONDecoderReflect
 {
 	public <T> T parse( String payload, Class<T> clazz  )
 		throws
@@ -30,7 +30,8 @@ public class JSONDecoder
 
 	public <T> T parse( Reader reader, Class<T> clazz )
 		throws
-		Exception
+		Exception,
+		MethodNotFoundException
 	{
 		try
 		{
@@ -86,34 +87,14 @@ public class JSONDecoder
 //		return new ArrayList<Object>();
 //	}
 
-	HashMap<Class,ConstructorAccess> caMap = new HashMap<>();
-	HashMap<Class,MethodAccess> maMap = new HashMap<>();
-
 	public <T> T parseMap( Class<T> parentClazz )
 		throws IOException, MethodNotFoundException
 	{
-		ConstructorAccess<T> access = null;
-		if( caMap.containsKey( parentClazz ))
-		{
-			access = caMap.get( parentClazz );
-		}
-		else
-		{
-			access = ConstructorAccess.get( parentClazz );
-			caMap.put( parentClazz, access );
-		}
+		ConstructorAccess<T> access = ConstructorAccess.get( parentClazz );
 		T parent = access.newInstance();
+//		T parent = null;
+//		System.out.println( parent.getClass().getName() );
 
-		MethodAccess ma = null;
-		if( maMap.containsKey( parentClazz ))
-		{
-			ma = maMap.get( parentClazz );
-		}
-		else
-		{
-			ma = MethodAccess.get( parentClazz );
-			maMap.put( parentClazz, ma );
-		}
 
 		String key = null;
 		char c = 0;
@@ -124,10 +105,10 @@ public class JSONDecoder
 			{
 				case '{':
 				{
-					int index = findMethodIndex( ma, key );
-					Class childClazz = ma.getParameterTypes()[ index ][ 0 ];
+					Method method = findMethod( parentClazz, key );
+					Class childClazz = getParamClass( method );
 					Object child = parseMap( childClazz );
-					ma.invoke( parent, index, child );
+					setChild( parent, method, child );
 					key = null;
 					break;
 				}
@@ -139,38 +120,39 @@ public class JSONDecoder
 
 				case '[':
 				{
-					int index = findMethodIndex( ma, key );
-					Class childClazz = ma.getParameterTypes()[ index ][ 0 ];
-					List<Object> child = parseList( childClazz );
-					ma.invoke( parent, index, child );
+					Method method = findMethod( parentClazz, key );
+					Class childClazz = getParamClass( method );
+					List<Object> childList = parseList( childClazz );
+					setChild( parent, method, childList );
 					key = null;
 					break;
 				}
 
 				case '\'':
 				case '"':
-				{
 					String value = readString( c );
 					if( key == null )
 					{
 						key = value;
-					} else
+					}
+					else
 					{
-						int index = findMethodIndex( ma, key );
-						Class childClazz = ma.getParameterTypes()[ index ][ 0 ];
+						Method method = findMethod( parentClazz, key );
+						Class childClazz = getParamClass( method );
 						if( childClazz.isEnum() )
 						{
 							Enum converted = Enum.valueOf( childClazz, value );
-							ma.invoke( parent, index, converted );
-						} else
+							setChild( parent, method, converted );
+						}
+						else
 						{
-							ma.invoke( parent, index, value );
+							setChild( parent, method, value );
 						}
 						key = null;
 					}
 
 					break;
-				}
+
 				case ':':
 					break;
 
@@ -182,8 +164,8 @@ public class JSONDecoder
 					consume( 'u' );
 					consume( 'l' );
 					consume( 'l' );
-					int index = findMethodIndex( ma, key );
-					ma.invoke( parent, index, (Object) null );
+					Method method = findMethod( parentClazz, key );
+					setChild( parent, method, null );
 					key = null;
 					break;
 				}
@@ -193,8 +175,8 @@ public class JSONDecoder
 					consume( 'r' );
 					consume( 'u' );
 					consume( 'e' );
-					int index = findMethodIndex( ma, key );
-					ma.invoke( parent, index, true );
+					Method method = findMethod( parentClazz, key );
+					setChild( parent, method, true );
 					key = null;
 					break;
 				}
@@ -205,8 +187,8 @@ public class JSONDecoder
 					consume( 'l' );
 					consume( 's' );
 					consume( 'e' );
-					int index = findMethodIndex( ma, key );
-					ma.invoke( parent, index, false );
+					Method method = findMethod( parentClazz, key );
+					setChild( parent, method, true );
 					key = null;
 					break;
 				}
@@ -222,32 +204,12 @@ public class JSONDecoder
 				case '7':
 				case '8':
 				case '9':
-				{
-					String value = readNumber2( c );
-					Number number = null;
-					int index = findMethodIndex( ma, key );
-					Class childClazz = ma.getParameterTypes()[ index ][ 0 ];
-					switch( childClazz.getSimpleName() )
-					{
-						case "Integer":
-						case "int":
-							number = Integer.valueOf( value );
-							break;
-
-						case "Long":
-						case "long":
-							number = Long.valueOf( value );
-							break;
-
-						default:
-//							number = readNumber( c );
-							break;
-
-					}
-					ma.invoke( parent, index, number );
+					Number number = readNumber( c );
+					Method method = findMethod( parentClazz, key );
+					setChild( parent, method, number );
 					key = null;
 					break;
-				}
+
 				// whitespace
 				case ' ':
 				case '\t':
@@ -276,8 +238,10 @@ public class JSONDecoder
 	public <U> List<U> parseList( Class<U> itemClazz )
 		throws IOException, MethodNotFoundException
 	{
+
 		// TODO: Pass in list class to be created
 		List<U> parent = new ArrayList<U>();
+//		List<U> parent = createList();
 
 		char c = 0;
 
@@ -362,6 +326,7 @@ public class JSONDecoder
 
 				default:
 					// TODO Something went wrong
+
 					break;
 
 			}
@@ -552,52 +517,6 @@ public class JSONDecoder
 		return result;
 	}
 
-	public String readNumber2( char c )
-		throws IOException
-	{
-		sb.setLength( 0 );
-		sb.append( (char) c );
-		mark();
-		boolean decimal = false;
-		loop:
-		while( true )
-		{
-			int d = read();
-			switch( d )
-			{
-				case '.':
-					decimal = true;
-				case '-':
-				case '+':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-				case 'E':
-				case 'e':
-					break;
-
-				case -1:
-					throw new IOException( "unexpected end of file" );
-
-				default:
-					break loop;
-			}
-		}
-		fill();
-		unmark();
-		pushBack();
-
-		String value = sb.toString();
-		return value;
-	}
-
 	public int readHex()
 		throws IOException
 	{
@@ -687,6 +606,8 @@ public class JSONDecoder
 		{
 			if( nth == limit )
 			{
+//				nth++;
+//				fill();
 				if( marked && mark < nth )
 				{
 					sb.append( buf, mark, nth - mark );
@@ -749,77 +670,42 @@ public class JSONDecoder
 		}
 	}
 
-	class ClassMethodKey
-	{
-		Class c;
-		String m;
-
-		public boolean equals( Object object )
-		{
-			if( this == object ) return true;
-			if( object instanceof ClassMethodKey )
-			{
-				ClassMethodKey that = (ClassMethodKey) object;
-				boolean a = this.c.equals( that.c );
-				boolean b = this.m.equals( that.m );
-				return a && b;
-			}
-			return false;
-		}
-
-		public int hashCode()
-		{
-			return c.hashCode() * m.hashCode();
-		}
-	}
-
-	HashMap<ClassMethodKey,Integer> indexMap = new HashMap<>();
-	ClassMethodKey spareKey = new ClassMethodKey();
-
-	public int findMethodIndex( MethodAccess ma, String name )
+	HashMap<String,Method> map = new HashMap<>();
+	public Method findMethod( Class clazz, String name )
 		throws MethodNotFoundException
 	{
-		spareKey.c = ma.getClass();
-		spareKey.m = name;
-		if( indexMap.containsKey( spareKey ))
+		if( map.containsKey( name ))
 		{
-			return indexMap.get( spareKey );
+			return map.get( name );
 		}
 
 		String setter = "set" + capitalize( name );
 
-		int fuzzyIndex = -1;
-		int max = ma.getMethodNames().length;
-		for( int nth = 0; nth < max; nth++ )
+		Method fuzzyMethod = null;
+
+		for( Method method : clazz.getMethods() )
 		{
-			if( ma.getParameterTypes()[nth].length != 1 )
+			Class<?>[] params = method.getParameterTypes();
+			if( params.length != 1 ) continue;
+
+			if( method.getName().equals( setter ) )
 			{
-				continue;
+				fuzzyMethod = method;
 			}
-			String temp = ma.getMethodNames()[nth];
-			if( setter.equals( temp ))
+
+			if( method.getName().equalsIgnoreCase( setter ))
 			{
-				fuzzyIndex = nth;
-				break;
-			}
-			if( setter.equalsIgnoreCase( temp ))
-			{
-				fuzzyIndex = nth;
+				fuzzyMethod = method;
 			}
 		}
 
-		if( fuzzyIndex == -1 )
+		if( fuzzyMethod == null )
 		{
-			// Delegate exception throwing to ReflectASM
-			ma.getIndex( setter );
+			throw new MethodNotFoundException( clazz, name );
 		}
+		map.put( name, fuzzyMethod );
 
-		ClassMethodKey key = new ClassMethodKey();
-		key.c = ma.getClass();
-		key.m = name;
-		indexMap.put( key, fuzzyIndex );
-
-		return fuzzyIndex;
+		return fuzzyMethod;
 	}
 
 	public Class<?> getParamClass( Method method )
@@ -841,24 +727,24 @@ public class JSONDecoder
 		}
 	}
 
-//	public void setChild( Object parent, Method method, Object child )
-//		throws IOException
-//	{
-//		try
-//		{
-//			method.invoke( parent, child );
-//		}
-//		catch( IllegalAccessException e )
-//		{
-//			e.printStackTrace();
-//			throw new IOException( e );
-//		}
-//		catch( InvocationTargetException e )
-//		{
-//			e.printStackTrace();
-//			throw new IOException( e );
-//		}
-//
-//	}
+	public void setChild( Object parent, Method method, Object child )
+		throws IOException
+	{
+		try
+		{
+			method.invoke( parent, child );
+		}
+		catch( IllegalAccessException e )
+		{
+			e.printStackTrace();
+			throw new IOException( e );
+		}
+		catch( InvocationTargetException e )
+		{
+			e.printStackTrace();
+			throw new IOException( e );
+		}
+
+	}
 
 }

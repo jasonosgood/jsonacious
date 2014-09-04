@@ -1,20 +1,19 @@
 package demo;
 
-import jsonacious.JSONReader;
+import jsonacious.JSONDecoder;
+import jsonacious.JSONDecoderReflect;
 
 import java.io.FileReader;
-import java.io.StringReader;
-import java.util.Map;
 
 /**
  */
-public class Perf
+public class PerfReflect
 {
 
 	public static void main( String[] args )
 		throws Exception
 	{
-		JSONReader jsonReader = new JSONReader();
+		JSONDecoderReflect jsonReader = new JSONDecoderReflect();
 //
 		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
 		StringBuilder sb = new StringBuilder();
@@ -35,12 +34,11 @@ public class Perf
 //		String payload = "{ 'A' : 'd \\u0064 e' }";
 //		String payload = "{ 'A' : '\\ra' }";
 //		sparky.reset();
-		Map map = null;
+		MediaItem map = null;
 
 		for( int x = 0; x < 10; x++ )
 		{
 			long start = System.currentTimeMillis();
-//			int reps = 5;
 			int reps = 50000;
 			for( int n = 0; n < reps; n++ )
 			{
@@ -51,7 +49,7 @@ public class Perf
 //			Map map = jsonReader.parse( payload );
 //				StringReader sparky = new StringReader( payload );
 
-				map = jsonReader.parse( payload );
+				map = jsonReader.parse( payload, MediaItem.class );
 //				sparky.reset();
 			}
 			long elapsed = System.currentTimeMillis() - start;

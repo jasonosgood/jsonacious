@@ -12,9 +12,9 @@ public class DemoDecode
     public static void main( String[] args )
         throws Exception
 	{
-		JSONDecoder jsonReader = new JSONDecoder();
+		JSONDecoder jsonDecoder = new JSONDecoder();
 		FileReader reader = new FileReader( "./data/whatever.json.pwd" );
-		MediaItem map = jsonReader.parse( reader, MediaItem.class );
+		MediaItem map = jsonDecoder.parse( reader, MediaItem.class );
 		System.out.println( map );
 	}
 
