@@ -1,31 +1,137 @@
 package jsonacious;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-/**
- */
-public class JSONReader
+public class JSONTanker
 {
-	public Map<String, Object> parse( String payload )
+	public Object parse( String payload )
 		throws IOException
 	{
 		Reader reader = new StringReader( payload );
 		return parse( reader );
 	}
 
-	Reader reader = null;
-	public Map<String, Object> parse( Reader reader )
+
+	public Object parse( Reader reader )
 		throws IOException
 	{
 		this.reader = reader;
 
 		mark = -1;
-		nth = 0;
+		nth = -1;
+		line = 0;
+		pos = 0;
+		last = 0;
+		back = false;
+		marked = false;
+		limit = 0;
+		return parse();
+	}
+
+	public Object parse()
+		throws IOException
+	{
+
+		while( true )
+		{
+//			char c;
+//			c = read();
+			char c = read();
+
+			switch( c )
+			{
+				// whitespace
+				case ' ':
+				case '\t':
+				case '\r':
+				case '\n':
+					break;
+
+				case '\'':
+				case '"':
+					return readString( c );
+
+				case '-':
+				case '0':
+				case '1':
+				case '2':
+				case '3':
+				case '4':
+				case '5':
+				case '6':
+				case '7':
+				case '8':
+				case '9':
+					return readNumber( c );
+
+				case '[':
+					return parseList();
+
+				case '{':
+					return parseMap();
+
+				case 'n':
+					consume( 'u' );
+					consume( 'l' );
+					consume( 'l' );
+					return null;
+
+				case 't':
+					consume( 'r' );
+					consume( 'u' );
+					consume( 'e' );
+					return Boolean.TRUE;
+
+				case 'f':
+					consume( 'a' );
+					consume( 'l' );
+					consume( 's' );
+					consume( 'e' );
+					return Boolean.FALSE;
+
+				case (char) -1:
+					return new HashMap<>();
+
+				default:
+					throw new IOException();
+			}
+		}
+	}
+
+	Reader reader = null;
+
+	/**
+	 * Override this method to use a different Map implementation. eg LinkedHashMap
+	 * would preserve file order. ArrayMap would be more space efficient.
+	 *
+	 * @return
+	 */
+	public Map<String, Object> createMap()
+	{
+		return new HashMap<String, Object>();
+//		return new LinkedHashMap<String, Object>();
+	}
+
+	public Map<String, Object> parseMap( String payload )
+		throws IOException
+	{
+		Reader reader = new StringReader( payload );
+		return parseMap( reader );
+
+	}
+
+	public Map<String, Object> parseMap( Reader reader )
+		throws IOException
+	{
+		this.reader = reader;
+
+		mark = -1;
+		nth = -1;
 		line = 0;
 		pos = 0;
 		last = 0;
@@ -35,252 +141,176 @@ public class JSONReader
 
 		while( true )
 		{
+//			char c;
+//			c = read();
 			char c = read();
 
 			switch( c )
 			{
-				case '{':
-					Map map = parseMap();
-					return map;
-
-
 				// whitespace
 				case ' ':
 				case '\t':
 				case '\r':
 				case '\n':
 					break;
+
+				case '{':
+					return parseMap();
 
 				case (char) -1:
 					return new HashMap<>();
 
 				default:
-					throw new IOException( "must start with '{'" );
-
+					throw new IOException();
 			}
 		}
-	}
-
-	/**
-	 * Override this methodA to use a different Map implementation. eg LinkedHashMap
-	 * would preserve file order. ArrayMap would be more space efficient.
-	 *
-	 * @return
-	 */
-	public Map<String, Object> createMap()
-	{
-		return new HashMap<String, Object>();
 	}
 
 	public Map<String, Object> parseMap()
 		throws IOException
 	{
-		Map<String, Object> parent = createMap();
+		Map<String, Object> map = createMap();
 
-		String key = null;
-		char c = 0;
-
-		while( (  c = read() ) != -1 )
+		while( true )
 		{
-			switch( c )
+			String key = null;
+			char c;
+			key:
+			while( true )
 			{
-				case '{':
+				c = read();
+				switch( c )
 				{
-					Map<String, Object> child = parseMap();
-					parent.put( key, child );
-					key = null;
-					break;
-				}
+					// whitespace
+					case ' ':
+					case '\t':
+					case '\r':
+					case '\n':
+						break;
 
-				case '}':
+					case '\'':
+					case '"':
+						key = readString( c );
+						break key;
+
+					case '}':
+						return map;
+
+					default:
+						throw new IOException();
+				}
+			}
+
+			colon:
+			while( true )
+			{
+				c = read();
+				switch( c )
 				{
-					return parent;
-				}
+					// whitespace
+					case ' ':
+					case '\t':
+					case '\r':
+					case '\n':
+						break;
 
-				case '[':
+					case ':':
+						break colon;
+
+					default:
+						throw new IOException();
+				}
+			}
+
+			Object value = parse();
+			map.put( key, value );
+
+			comma:
+			while( true )
+			{
+				c = read();
+				switch( c )
 				{
-					List<Object> child = parseList();
-					parent.put( key, child );
-					key = null;
-					break;
+					// whitespace
+					case ' ':
+					case '\t':
+					case '\r':
+					case '\n':
+						break;
+
+					case ',':
+						break comma;
+
+					case '}':
+						return map;
+
+					default:
+						throw new IOException();
 				}
-
-				case '\'':
-				case '"':
-					String value = readString( c );
-					if( key == null )
-					{
-						key = value;
-					}
-					else
-					{
-						parent.put( key, value );
-						key = null;
-					}
-
-					break;
-
-				case ':':
-					break;
-
-				case ',':
-					break;
-
-				case 'n':
-					consume( 'u' );
-					consume( 'l' );
-					consume( 'l' );
-					parent.put( key, null );
-					key = null;
-					break;
-
-				case 't':
-					consume( 'r' );
-					consume( 'u' );
-					consume( 'e' );
-					parent.put( key, true );
-					key = null;
-					break;
-
-				case 'f':
-					consume( 'a' );
-					consume( 'l' );
-					consume( 's' );
-					consume( 'e' );
-					parent.put( key, false );
-					key = null;
-					break;
-
-				case '-':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					Number number = readNumber( c );
-					parent.put( key, number );
-					key = null;
-					break;
-
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
-
-				default:
-					// TODO Something went wrong
-
-					break;
-
 			}
 		}
-		return parent;
 	}
 
 	public List<Object> parseList()
 		throws IOException
 	{
-		List<Object> parent = createList();
+		List<Object> list = createList();
 
-		char c = 0;
-
-		while( (  c = read() ) != -1 )
+		while( true )
 		{
-			switch( c )
+			char c;
+			item:
+			while( true )
 			{
-				case '{':
+				c = read();
+				switch( c )
 				{
-					Map<String, Object> child = parseMap();
-					parent.add( child );
-					break;
-				}
+					// whitespace
+					case ' ':
+					case '\t':
+					case '\r':
+					case '\n':
+						break;
 
-				case '[':
+					case ']':
+						return list;
+
+					default:
+						pushBack();
+						Object item = parse();
+						list.add( item );
+						break item;
+				}
+			}
+
+			comma:
+			while( true )
+			{
+				c = read();
+				switch( c )
 				{
-					List<Object> child = parseList();
-					parent.add( child );
-					break;
+					// whitespace
+					case ' ':
+					case '\t':
+					case '\r':
+					case '\n':
+						break;
+
+					case ',':
+						break comma;
+
+					case ']':
+						return list;
+
+					default:
+						throw new IOException();
 				}
-
-				case ']':
-				{
-					return parent;
-				}
-
-
-				case '\'':
-				case '"':
-					String value = readString( c );
-					parent.add( value );
-
-					break;
-
-				case ',':
-					break;
-
-				case 'n':
-					consume( 'u' );
-					consume( 'l' );
-					consume( 'l' );
-					parent.add( null );
-					break;
-
-				case 't':
-					consume( 'r' );
-					consume( 'u' );
-					consume( 'e' );
-					parent.add( true );
-					break;
-
-				case 'f':
-					consume( 'a' );
-					consume( 'l' );
-					consume( 's' );
-					consume( 'e' );
-					parent.add( false );
-					break;
-
-				case '-':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					Number number = readNumber( c );
-					parent.add( number );
-					break;
-
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
-
-				default:
-					// TODO Something went wrong
-
-					break;
-
 			}
 		}
-		return parent;
 	}
 
 	/**
-	 * Override this methodA to use a different List implementation. For whatever reason.
+	 * Override this method to use a different List implementation. For whatever reason.
 	 *
 	 * @return
 	 */
@@ -291,7 +321,7 @@ public class JSONReader
 
 	StringBuilder sb = new StringBuilder();
 
-	public String readString( int delim )
+	public String readString( char delim )
 		throws IOException
 	{
 		char c;
@@ -304,7 +334,6 @@ public class JSONReader
 				case '\\':
 				{
 					fill();
-					unmark();
 					c = read();
 					switch( c )
 					{
@@ -341,21 +370,12 @@ public class JSONReader
 							break;
 
 						case 'u':
-//							int hex =
-//								readHex( reader ) << 12 +
-//								readHex( reader ) << 8 +
-//								readHex( reader ) << 4 +
-//								readHex( reader );
 							int hex =
-								readHex() << 12;
-							hex += readHex() << 8;
-							hex += readHex() << 4;
-							hex += readHex();
-//							System.out.println( " = " + hex );
+								( readHex() << 12 ) +
+								( readHex() << 8 ) +
+								( readHex() << 4 ) +
+								readHex();
 							sb.append( (char) hex );
-//							char hex = readHexZ();
-//							sb.append( hex );
-
 							break;
 
 						default:
@@ -363,11 +383,8 @@ public class JSONReader
 					}
 
 					mark();
-
 					break;
 				}
-
-
 				case (char) -1:
 				{
 					throw new IOException( "unexpected end of file" );
@@ -377,7 +394,7 @@ public class JSONReader
 			}
 		}
 		fill();
-		unmark();
+//		System.out.println( sb.toString() );
 		return sb.toString();
 	}
 
@@ -420,7 +437,7 @@ public class JSONReader
 			}
 		}
 		fill();
-		unmark();
+
 		pushBack();
 
 		Number result = null;
@@ -469,6 +486,8 @@ public class JSONReader
 				}
 			}
 		}
+
+//		System.out.println( result );
 		return result;
 	}
 
@@ -495,34 +514,6 @@ public class JSONReader
 		throw new IOException( "not a hex digit " + (char) x );
 	}
 
-	public char readHexZ()
-		throws IOException
-	{
-		int result = 0;
-		for( int i = 0; i < 4; i++ )
-		{
-			result <<= 4;
-			char x = read();
-			if( x >= '0' && x <= '9' )
-			{
-				result += ( x - '0' );
-				continue;
-			}
-			if( x >= 'a' && x <= 'h' )
-			{
-				result += ( x - 'a' + 10 );
-				continue;
-			}
-			if( x >= 'A' && x <= 'H' )
-			{
-				result += ( x - 'A' + 10 );
-				continue;
-			}
-			throw new IOException( "not a hex digit " + (char) x );
-		}
-		return (char) result;
-	}
-
 	public void consume( char e )
 		throws IOException
 	{
@@ -534,13 +525,14 @@ public class JSONReader
 	}
 
 	int mark = -1;
-	int nth = 0;
+	int nth = -1;
 	int line = 0;
 	int pos = 0;
 	char last = 0;
 	int limit = 0;
 
 	final static int SIZE = 1024;
+//	final static int SIZE = 4;
 	char[] buf = new char[SIZE];
 	/**
 	 * Tracks character count, line count, line position.
@@ -549,27 +541,35 @@ public class JSONReader
 	char read()
 		throws IOException
 	{
-
-		char c = 0;
+//		char c;
 		if( back )
 		{
-			c = last;
+//			c = last;
 			back = false;
+			return last;
 		}
-		else
+//		else
 		{
+			nth++;
+			// refill buffer as needed
 			if( nth == limit )
 			{
-				nth++;
-				fill();
+				if( marked && mark < nth )
+				{
+					sb.append( buf, mark + 1, nth - mark - 1 );
+				}
 				limit = reader.read( buf, 0, SIZE );
+				if( limit == -1 ) return (char) -1;
 				nth = 0;
-				mark = 0;
+				mark = -1;
 			}
-			c = buf[ nth ];
+			char c = buf[ nth ];
+			last = c;
+
+			return c;
+
 		}
 
-		nth++;
 
 //		if( c == '\n' || c == '\r' )
 //		{
@@ -588,8 +588,8 @@ public class JSONReader
 //			line--;
 
 //		last = c;
-
-		return c;
+//
+//		return c;
 	}
 
 	boolean back = false;
@@ -605,17 +605,12 @@ public class JSONReader
 		marked = true;
 	}
 
-	void unmark()
-	{
-		mark = -1;
-		marked = false;
-	}
-
 	void fill()
 	{
 		if( marked && mark < nth )
 		{
-			sb.append( buf, mark, nth - mark - 1 );
+			sb.append( buf, mark + 1, nth - mark - 1 );
 		}
+		marked = false;
 	}
 }

@@ -1,6 +1,8 @@
-{"content": {
-    "height": 120,
+{
+"a\u0064pple" : "banana\u0064",
+"content": {
     "uri": "http://whatever.biz",
+    "height": 120,
     "title": "Performance micro-benchmark, to be run manually\\u0064",
     "width": 900,
     "format": null,

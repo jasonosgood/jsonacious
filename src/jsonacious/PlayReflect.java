@@ -27,9 +27,16 @@ public class PlayReflect
 //		int b = ma.getIndex( "getPhotos", 2 );
 		int c = ma.getIndex( "setFormat", 1 );
 		ma.invoke( o, c, (Object) null );
+		Object roar = null;
+		ma.invoke( o, c, roar );
+//		ma.invoke( o, c, null );
 //		ma.invoke( o, c );
 
 		System.out.println();
+
+		int d = ma.getIndex( "getFormat" );
+		Object result = ma.invoke( o, d );
+
 	}
 
 	private static String capitalize( String propertyName )

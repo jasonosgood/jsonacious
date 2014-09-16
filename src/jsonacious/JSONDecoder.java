@@ -841,12 +841,12 @@ public class JSONDecoder
 		}
 	}
 
-//	public void setChild( Object parent, Method method, Object child )
+//	public void setChild( Object parent, Method methodA, Object child )
 //		throws IOException
 //	{
 //		try
 //		{
-//			method.invoke( parent, child );
+//			methodA.invoke( parent, child );
 //		}
 //		catch( IllegalAccessException e )
 //		{

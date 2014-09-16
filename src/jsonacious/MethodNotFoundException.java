@@ -10,6 +10,6 @@ extends
 {
 	public MethodNotFoundException( Class clazz, String name )
 	{
-		super( String.format( "class '%s' does not have method (bean) '%s'", clazz.getName(), name ));
+		super( String.format( "class '%s' does not have methodA (bean) '%s'", clazz.getName(), name ));
 	}
 }
