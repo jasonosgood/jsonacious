@@ -36,25 +36,21 @@ public class JSONTanker
 	public Object parse()
 		throws IOException
 	{
-
 		while( true )
 		{
-//			char c;
-//			c = read();
 			char c = read();
 
 			switch( c )
 			{
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
-
 				case '\'':
 				case '"':
 					return readString( c );
+
+				case '[':
+					return parseList();
+
+				case '{':
+					return parseMap();
 
 				case '-':
 				case '0':
@@ -68,12 +64,6 @@ public class JSONTanker
 				case '8':
 				case '9':
 					return readNumber( c );
-
-				case '[':
-					return parseList();
-
-				case '{':
-					return parseMap();
 
 				case 'n':
 					consume( 'u' );
@@ -93,12 +83,6 @@ public class JSONTanker
 					consume( 's' );
 					consume( 'e' );
 					return Boolean.FALSE;
-
-				case (char) -1:
-					return new HashMap<>();
-
-				default:
-					throw new IOException();
 			}
 		}
 	}
@@ -122,7 +106,6 @@ public class JSONTanker
 	{
 		Reader reader = new StringReader( payload );
 		return parseMap( reader );
-
 	}
 
 	public Map<String, Object> parseMap( Reader reader )
@@ -141,112 +124,49 @@ public class JSONTanker
 
 		while( true )
 		{
-//			char c;
-//			c = read();
 			char c = read();
-
-			switch( c )
-			{
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
-
-				case '{':
-					return parseMap();
-
-				case (char) -1:
-					return new HashMap<>();
-
-				default:
-					throw new IOException();
-			}
+			if( c == '{' ) return parseMap();
 		}
 	}
 
 	public Map<String, Object> parseMap()
 		throws IOException
 	{
-		Map<String, Object> map = createMap();
+		Map<String, Object> map = null;
 
 		while( true )
 		{
 			String key = null;
 			char c;
-			key:
 			while( true )
 			{
 				c = read();
-				switch( c )
+				if(  c == '"' || c == '\'' )
 				{
-					// whitespace
-					case ' ':
-					case '\t':
-					case '\r':
-					case '\n':
-						break;
-
-					case '\'':
-					case '"':
-						key = readString( c );
-						break key;
-
-					case '}':
-						return map;
-
-					default:
-						throw new IOException();
+					key = readString( c );
+					break;
 				}
+				if(  c == '}' ) return map;
 			}
 
-			colon:
 			while( true )
 			{
 				c = read();
-				switch( c )
-				{
-					// whitespace
-					case ' ':
-					case '\t':
-					case '\r':
-					case '\n':
-						break;
-
-					case ':':
-						break colon;
-
-					default:
-						throw new IOException();
-				}
+				if( c == ':' ) break;
 			}
 
 			Object value = parse();
+			if( map == null )
+			{
+				map = createMap();
+			}
 			map.put( key, value );
 
-			comma:
 			while( true )
 			{
 				c = read();
-				switch( c )
-				{
-					// whitespace
-					case ' ':
-					case '\t':
-					case '\r':
-					case '\n':
-						break;
-
-					case ',':
-						break comma;
-
-					case '}':
-						return map;
-
-					default:
-						throw new IOException();
-				}
+				if( c == ',' ) break;
+				if( c == '}' ) return map;
 			}
 		}
 	}
@@ -254,57 +174,31 @@ public class JSONTanker
 	public List<Object> parseList()
 		throws IOException
 	{
-		List<Object> list = createList();
+		List<Object> list = null;
 
 		while( true )
 		{
 			char c;
-			item:
 			while( true )
 			{
 				c = read();
-				switch( c )
+				if( c == ']' ) return list;
+
+				pushBack();
+				Object item = parse();
+				if( list == null )
 				{
-					// whitespace
-					case ' ':
-					case '\t':
-					case '\r':
-					case '\n':
-						break;
-
-					case ']':
-						return list;
-
-					default:
-						pushBack();
-						Object item = parse();
-						list.add( item );
-						break item;
+					list = createList();
 				}
+				list.add( item );
+				break;
 			}
 
-			comma:
 			while( true )
 			{
 				c = read();
-				switch( c )
-				{
-					// whitespace
-					case ' ':
-					case '\t':
-					case '\r':
-					case '\n':
-						break;
-
-					case ',':
-						break comma;
-
-					case ']':
-						return list;
-
-					default:
-						throw new IOException();
-				}
+				if( c == ',' ) break;
+				if( c == ']' ) return list;
 			}
 		}
 	}
@@ -375,7 +269,14 @@ public class JSONTanker
 								( readHex() << 8 ) +
 								( readHex() << 4 ) +
 								readHex();
+//							int hex =
+//								readHex() << 12;
+//							hex += readHex() << 8;
+//							hex += readHex() << 4;
+//							hex += readHex();
 							sb.append( (char) hex );
+//							char hex = readHexZ();
+//							sb.append( (char) hex );
 							break;
 
 						default:
@@ -385,12 +286,12 @@ public class JSONTanker
 					mark();
 					break;
 				}
-				case (char) -1:
-				{
-					throw new IOException( "unexpected end of file" );
-				}
-				default:
-					break;
+//				case (char) -1:
+//				{
+//					throw new IOException( "unexpected end of file" );
+//				}
+//				default:
+//					break;
 			}
 		}
 		fill();
@@ -514,6 +415,35 @@ public class JSONTanker
 		throw new IOException( "not a hex digit " + (char) x );
 	}
 
+	public char readHexZ()
+		throws IOException
+	{
+		int result = 0;
+		for( int i = 0; i < 4; i++ )
+		{
+			result <<= 4;
+			char x = read();
+			if( x >= '0' && x <= '9' )
+			{
+				result += ( x - '0' );
+				continue;
+			}
+			if( x >= 'a' && x <= 'h' )
+			{
+				result += ( x - 'a' + 10 );
+				continue;
+			}
+			if( x >= 'A' && x <= 'H' )
+			{
+				result += ( x - 'A' + 10 );
+				continue;
+			}
+			throw new IOException( "not a hex digit " + (char) x );
+		}
+		return (char) result;
+	}
+
+
 	public void consume( char e )
 		throws IOException
 	{
@@ -532,7 +462,6 @@ public class JSONTanker
 	int limit = 0;
 
 	final static int SIZE = 1024;
-//	final static int SIZE = 4;
 	char[] buf = new char[SIZE];
 	/**
 	 * Tracks character count, line count, line position.
@@ -541,34 +470,30 @@ public class JSONTanker
 	char read()
 		throws IOException
 	{
-//		char c;
 		if( back )
 		{
-//			c = last;
 			back = false;
 			return last;
 		}
-//		else
+
+		nth++;
+		// refill buffer as needed
+		if( nth == limit )
 		{
-			nth++;
-			// refill buffer as needed
-			if( nth == limit )
+			if( marked && mark < nth )
 			{
-				if( marked && mark < nth )
-				{
-					sb.append( buf, mark + 1, nth - mark - 1 );
-				}
-				limit = reader.read( buf, 0, SIZE );
-				if( limit == -1 ) return (char) -1;
-				nth = 0;
-				mark = -1;
+				sb.append( buf, mark + 1, nth - mark - 1 );
 			}
-			char c = buf[ nth ];
-			last = c;
-
-			return c;
-
+			limit = reader.read( buf, 0, SIZE );
+			if( limit == -1 ) return (char) -1;
+			nth = 0;
+			mark = -1;
 		}
+		char c = buf[ nth ];
+		last = c;
+
+		return c;
+
 
 
 //		if( c == '\n' || c == '\r' )

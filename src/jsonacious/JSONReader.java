@@ -189,7 +189,7 @@ public class JSONReader
 	{
 		List<Object> parent = createList();
 
-		char c = 0;
+		char c;
 
 		while( (  c = read() ) != -1 )
 		{
@@ -549,25 +549,22 @@ public class JSONReader
 	char read()
 		throws IOException
 	{
-
-		char c = 0;
 		if( back )
 		{
-			c = last;
 			back = false;
+			return last;
 		}
-		else
+
+		if( nth == limit )
 		{
-			if( nth == limit )
-			{
-				nth++;
-				fill();
-				limit = reader.read( buf, 0, SIZE );
-				nth = 0;
-				mark = 0;
-			}
-			c = buf[ nth ];
+			nth++;
+			fill();
+			limit = reader.read( buf, 0, SIZE );
+			nth = 0;
+			mark = 0;
 		}
+
+		char c = buf[ nth ];
 
 		nth++;
 
@@ -587,7 +584,7 @@ public class JSONReader
 //		if( c == '\r' && last == '\n')
 //			line--;
 
-//		last = c;
+		last = c;
 
 		return c;
 	}

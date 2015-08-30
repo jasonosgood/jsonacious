@@ -16,7 +16,8 @@ public class Perf
 	{
 		JSONReader jsonReader = new JSONReader();
 //
-		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
+//		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
+		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json" );
 		StringBuilder sb = new StringBuilder();
 		while( true )
 		{
@@ -57,6 +58,7 @@ public class Perf
 			long elapsed = System.currentTimeMillis() - start;
 
 			System.out.printf( "elapsed: %d msec \n", elapsed );
+			System.gc();
 //			System.out.printf( "each: %f msec \n", (double) elapsed / (double) reps );
 			Thread.sleep( 1000 );
 		}

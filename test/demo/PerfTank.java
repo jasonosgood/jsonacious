@@ -15,7 +15,8 @@ public class PerfTank
 	{
 		JSONTanker jsonReader = new JSONTanker();
 //
-		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
+//		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
+		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json" );
 		StringBuilder sb = new StringBuilder();
 		while( true )
 		{
@@ -34,29 +35,20 @@ public class PerfTank
 //		String payload = "{ 'A' : 'd \\u0064 e' }";
 //		String payload = "{ 'A' : '\\ra' }";
 //		sparky.reset();
-		Object map = null;
+		Map map = null;
 
 		for( int x = 0; x < 10; x++ )
 		{
 			long start = System.currentTimeMillis();
-//			int reps = 5;
 			int reps = 50000;
 			for( int n = 0; n < reps; n++ )
 			{
-//			if( n ==  warmup)
-//			{
-//				start = System.currentTimeMillis();
-//			}
-//			Map map = jsonReader.parse( payload );
-//				StringReader sparky = new StringReader( payload );
-
-				map = jsonReader.parse( payload );
-//				sparky.reset();
+				map = jsonReader.parseMap( payload );
 			}
 			long elapsed = System.currentTimeMillis() - start;
 
 			System.out.printf( "elapsed: %d msec \n", elapsed );
-//			System.out.printf( "each: %f msec \n", (double) elapsed / (double) reps );
+			System.gc();
 			Thread.sleep( 1000 );
 		}
 	}

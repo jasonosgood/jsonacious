@@ -1,5 +1,5 @@
 {
-"apple" : "banana",
+"a\u0064pple" : "banana\u0064",
 "content": {
     "uri": "http://whatever.biz",
     "height": 120,
