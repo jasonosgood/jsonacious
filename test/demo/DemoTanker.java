@@ -34,7 +34,8 @@ public class DemoTanker
 
 			"} ";
 
-		payload = "{ 'A' : 'apple', 'B' : {} }";
+//		payload = "{ 'A' : 'apple', 'B' : {} }";
+		payload = "{ 'A' : 'apple', 'B' : {} ";
 
 		Map map = jsonTanker.parseMap( payload );
 		System.out.println( map );
