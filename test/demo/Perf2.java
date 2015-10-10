@@ -40,7 +40,7 @@ public class Perf2
 //			{
 //				start = System.currentTimeMillis();
 //			}
-//			Map map = jsonReader.parse( sparky );
+//			Map map = jsonReader.parseRoot( sparky );
 //			sparky.reset();
 //		}
 //		long elapsed = System.currentTimeMillis() - start;
@@ -59,7 +59,7 @@ public class Perf2
 //			{
 //				start = System.currentTimeMillis();
 //			}
-//			Map map = jsonReader.parse( payload );
+//			Map map = jsonReader.parseRoot( payload );
 //				StringReader sparky = new StringReader( payload );
 
 				Map map = jsonReader.parse( payload );

@@ -46,7 +46,7 @@ public class PerfReflect
 //			{
 //				start = System.currentTimeMillis();
 //			}
-//			Map map = jsonReader.parse( payload );
+//			Map map = jsonReader.parseRoot( payload );
 //				StringReader sparky = new StringReader( payload );
 
 				map = jsonReader.parse( payload, MediaItem.class );
