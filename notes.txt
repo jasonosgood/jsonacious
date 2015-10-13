@@ -1,0 +1,6 @@
+JIT trace
+
+-XX:+PrintCompilation -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining
+
+
+Pass in class

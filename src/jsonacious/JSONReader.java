@@ -1,297 +1,372 @@
 package jsonacious;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-/**
- */
 public class JSONReader
 {
-	public Map<String, Object> parse( String payload )
+    public final static char EOF = (char) -1;
+    final static int SIZE = 1024;
+
+    char[] buf = new char[ SIZE ];
+
+    Reader reader = null;
+
+    /**
+     * Returns either Map or List.
+     */
+    public Object parse( String payload )
 		throws IOException
 	{
 		Reader reader = new StringReader( payload );
 		return parse( reader );
 	}
 
-	Reader reader = null;
-	public Map<String, Object> parse( Reader reader )
+    /**
+     * Returns either Map or List.
+     */
+    public Object parse( Reader reader )
 		throws IOException
 	{
-		this.reader = reader;
+        reset();
+        this.reader = reader;
+		return parseRoot();
+	}
 
-		mark = -1;
-		nth = 0;
-		line = 0;
-		pos = 0;
-		last = 0;
-		back = false;
-		marked = false;
-		limit = 0;
+    Object parseRoot()
+        throws IOException
+    {
+        while( true )
+        {
+            char c = read();
+            switch( c )
+            {
+                case '[':
+                    return parseList();
+
+                case '{':
+                    return parseMap();
+            }
+        }
+    }
+
+    public Map<String, Object> parseMap( String payload )
+        throws IOException
+    {
+        Reader reader = new StringReader( payload );
+        return parseMap( reader );
+    }
+
+    public Map<String, Object> parseMap( Reader reader )
+        throws IOException
+    {
+        reset();
+        this.reader = reader;
+
+        char c;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case '{':
+                    return parseMap();
+
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
+
+                case EOF:
+                    throw new ParseException( "EOF, expected '{'", line, pos );
+
+                default:
+                    throw new ParseException( "map not found", '{', c, line, pos );
+            }
+        }
+    }
+
+    public Map<String, Object> parseMap()
+		throws IOException
+	{
+		Map<String, Object> map = createMap();
 
 		while( true )
 		{
-			char c = read();
+			String key = parseKey();
+            if( key == null ) return map;
 
-			switch( c )
-			{
-				case '{':
-					Map map = parseMap();
-					return map;
+            parseColon();
 
+			Object value = parseValue();
 
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
+			map.put( key, value );
 
-				case (char) -1:
-					return new HashMap<>();
-
-				default:
-					throw new IOException( "must start with '{'" );
-
-			}
+            if( doneMap() ) return map;
 		}
 	}
 
-	/**
-	 * Override this methodA to use a different Map implementation. eg LinkedHashMap
-	 * would preserve file order. ArrayMap would be more space efficient.
-	 *
-	 * @return
-	 */
-	public Map<String, Object> createMap()
-	{
-		return new HashMap<String, Object>();
-	}
+    /**
+     * Returns true if next char is a comma ',', false if right curly bracket '}'.
+     * Eats leading whitespace.
+     * Otherwise throws an exception.
+     */
+    public boolean doneMap()
+        throws IOException
+    {
+        char c;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case ',':
+                    return false;
 
-	public Map<String, Object> parseMap()
-		throws IOException
-	{
-		Map<String, Object> parent = createMap();
+                case '}':
+                    return true;
 
-		String key = null;
-		char c = 0;
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
 
-		while( (  c = read() ) != -1 )
-		{
-			switch( c )
-			{
-				case '{':
-				{
-					Map<String, Object> child = parseMap();
-					parent.put( key, child );
-					key = null;
-					break;
-				}
+                case EOF:
+                    throw new ParseException( "EOF, expected '}'", line, pos );
 
-				case '}':
-				{
-					return parent;
-				}
+                default:
+                    throw new ParseException( "next key not found", ',', c, line, pos );
+            }
+        }
+    }
 
-				case '[':
-				{
-					List<Object> child = parseList();
-					parent.put( key, child );
-					key = null;
-					break;
-				}
+    public String parseKey()
+        throws IOException
+    {
+        char c;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case '"':
+                case '\'':
+                    return readString( c );
 
-				case '\'':
-				case '"':
-					String value = readString( c );
-					if( key == null )
-					{
-						key = value;
-					}
-					else
-					{
-						parent.put( key, value );
-						key = null;
-					}
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
 
-					break;
+                case '}':
+                    // empty map
+                    return null;
 
-				case ':':
-					break;
+                case EOF:
+                    throw new ParseException( "EOF, expected '}'", line, pos );
 
-				case ',':
-					break;
+                default:
+                    throw new ParseException( '}', c, line, pos );
+            }
+        }
+    }
 
-				case 'n':
-					consume( 'u' );
-					consume( 'l' );
-					consume( 'l' );
-					parent.put( key, null );
-					key = null;
-					break;
+    public void parseColon()
+        throws IOException
+    {
+        char c;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case ':':
+                    return;
 
-				case 't':
-					consume( 'r' );
-					consume( 'u' );
-					consume( 'e' );
-					parent.put( key, true );
-					key = null;
-					break;
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
 
-				case 'f':
-					consume( 'a' );
-					consume( 'l' );
-					consume( 's' );
-					consume( 'e' );
-					parent.put( key, false );
-					key = null;
-					break;
+                case EOF:
+                    throw new ParseException( "EOF, expected ':'", line, pos );
 
-				case '-':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					Number number = readNumber( c );
-					parent.put( key, number );
-					key = null;
-					break;
+                default:
+                    throw new ParseException( ':', c, line, pos );
+            }
+        }
+    }
 
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
+    public List<Object> parseList( Reader reader )
+        throws IOException
+    {
+        reset();
+        this.reader = reader;
 
-				default:
-					// TODO Something went wrong
+        char c;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case '[':
+                    return parseList();
 
-					break;
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
 
-			}
-		}
-		return parent;
-	}
+                case EOF:
+                    throw new ParseException( "EOF, expected '['", line, pos );
 
-	public List<Object> parseList()
-		throws IOException
-	{
-		List<Object> parent = createList();
+                default:
+                    throw new ParseException( "list not found", '[', c, line, pos );
+            }
+        }
+    }
 
-		char c;
+    public List<Object> parseList()
+        throws IOException
+    {
+        List<Object> list = createList();
 
-		while( (  c = read() ) != -1 )
-		{
-			switch( c )
-			{
-				case '{':
-				{
-					Map<String, Object> child = parseMap();
-					parent.add( child );
-					break;
-				}
+        while( true )
+        {
+            Object item = parseValue();
 
-				case '[':
-				{
-					List<Object> child = parseList();
-					parent.add( child );
-					break;
-				}
+            // check for magic value representing end of list
+            if( item == this ) return list;
 
-				case ']':
-				{
-					return parent;
-				}
+            list.add( item );
 
+            if( doneList() ) return list;
+        }
+    }
 
-				case '\'':
-				case '"':
-					String value = readString( c );
-					parent.add( value );
+    /**
+     * Returns true if next char is a comma ',', false if right square bracket ']'.
+     * Eats leading whitespace.
+     * Otherwise throws an exception.
+     */
+    public boolean doneList()
+        throws IOException
+    {
+        char c;
 
-					break;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case ',':
+                    return false;
 
-				case ',':
-					break;
+                case ']':
+                    return true;
 
-				case 'n':
-					consume( 'u' );
-					consume( 'l' );
-					consume( 'l' );
-					parent.add( null );
-					break;
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
 
-				case 't':
-					consume( 'r' );
-					consume( 'u' );
-					consume( 'e' );
-					parent.add( true );
-					break;
+                case EOF:
+                    throw new ParseException( "EOF, expected ']'", line, pos );
 
-				case 'f':
-					consume( 'a' );
-					consume( 'l' );
-					consume( 's' );
-					consume( 'e' );
-					parent.add( false );
-					break;
+                default:
+                    throw new ParseException( "next item not found", ',', c, line, pos );
+            }
+        }
+    }
 
-				case '-':
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-					Number number = readNumber( c );
-					parent.add( number );
-					break;
+    public Object parseValue()
+        throws IOException
+    {
+        while( true )
+        {
+            char c = read();
 
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
+            switch( c )
+            {
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
 
-				default:
-					// TODO Something went wrong
+                case '\'':
+                case '"':
+                    return readString( c );
 
-					break;
+                case '[':
+                    return parseList();
 
-			}
-		}
-		return parent;
-	}
+                case '{':
+                    return parseMap();
 
-	/**
-	 * Override this methodA to use a different List implementation. For whatever reason.
-	 *
-	 * @return
-	 */
-	public List<Object> createList()
-	{
-		return new ArrayList<Object>();
-	}
+                case '-':
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    return readNumber( c );
+
+                case 'n':
+                    consume( 'u' );
+                    consume( 'l' );
+                    consume( 'l' );
+                    return null;
+
+                case 't':
+                    consume( 'r' );
+                    consume( 'u' );
+                    consume( 'e' );
+                    return Boolean.TRUE;
+
+                case 'f':
+                    consume( 'a' );
+                    consume( 'l' );
+                    consume( 's' );
+                    consume( 'e' );
+                    return Boolean.FALSE;
+
+                case ']':
+                    // magic value to represent end of list
+                    return this;
+
+                default:
+                    throw new ParseException( "expected value", line, pos );
+
+            }
+        }
+    }
 
 	StringBuilder sb = new StringBuilder();
 
-	public String readString( int delim )
+	public String readString( char delim )
 		throws IOException
 	{
 		char c;
@@ -304,7 +379,6 @@ public class JSONReader
 				case '\\':
 				{
 					fill();
-					unmark();
 					c = read();
 					switch( c )
 					{
@@ -341,43 +415,38 @@ public class JSONReader
 							break;
 
 						case 'u':
-//							int hex =
-//								readHex( reader ) << 12 +
-//								readHex( reader ) << 8 +
-//								readHex( reader ) << 4 +
-//								readHex( reader );
 							int hex =
-								readHex() << 12;
-							hex += readHex() << 8;
-							hex += readHex() << 4;
-							hex += readHex();
-//							System.out.println( " = " + hex );
+								( readHex() << 12 ) +
+								( readHex() << 8 ) +
+								( readHex() << 4 ) +
+								readHex();
+//							int hex =
+//								readHex() << 12;
+//							hex += readHex() << 8;
+//							hex += readHex() << 4;
+//							hex += readHex();
 							sb.append( (char) hex );
 //							char hex = readHexZ();
-//							sb.append( hex );
-
+//							sb.append( (char) hex );
 							break;
 
 						default:
-							throw new IOException( "what is '\\" + (char) c + "'?" );
+							throw new ParseException( "what is '\\" + c + "'?", line, pos );
 					}
 
 					mark();
-
 					break;
 				}
-
-
-				case (char) -1:
-				{
-					throw new IOException( "unexpected end of file" );
-				}
-				default:
-					break;
+//				case (char) -1:
+//				{
+//					throw new IOException( "unexpected end of file" );
+//				}
+//				default:
+//					break;
 			}
 		}
 		fill();
-		unmark();
+//		System.out.println( sb.toString() );
 		return sb.toString();
 	}
 
@@ -385,7 +454,7 @@ public class JSONReader
 		throws IOException
 	{
 		sb.setLength( 0 );
-		sb.append( (char) c );
+		sb.append( c );
 		mark();
 		boolean decimal = false;
 		loop:
@@ -420,10 +489,10 @@ public class JSONReader
 			}
 		}
 		fill();
-		unmark();
+
 		pushBack();
 
-		Number result = null;
+		Number result;
 		String value = sb.toString();
 		if( decimal )
 		{
@@ -469,9 +538,19 @@ public class JSONReader
 				}
 			}
 		}
+
+//		System.out.println( result );
 		return result;
 	}
 
+    /*
+    '0' 48
+    '9' 57
+    'A' 65
+    'H' 72
+    'a' 97
+    'h' 104
+     */
 	public int readHex()
 		throws IOException
 	{
@@ -492,7 +571,7 @@ public class JSONReader
 //			System.out.print( x - 'A' + 10 );
 			return x - 'A' + 10;
 		}
-		throw new IOException( "not a hex digit " + (char) x );
+		throw new IOException( "not a hex digit " + x );
 	}
 
 	public char readHexZ()
@@ -518,32 +597,48 @@ public class JSONReader
 				result += ( x - 'A' + 10 );
 				continue;
 			}
-			throw new IOException( "not a hex digit " + (char) x );
+			throw new IOException( "not a hex digit " + x );
 		}
 		return (char) result;
 	}
 
-	public void consume( char e )
+
+	public void consume( char expected )
 		throws IOException
 	{
 		char c = read();
-		if( c != e )
+		if( c != expected )
 		{
-			throw new IOException( "expected '" + e + "', found '" + c + "'" );
+			throw new ParseException( expected, c, line, pos );
 		}
 	}
 
-	int mark = -1;
-	int nth = 0;
-	int line = 0;
-	int pos = 0;
-	char last = 0;
-	int limit = 0;
+    int line = 1;
+    int pos = 0;
 
-	final static int SIZE = 1024;
-	char[] buf = new char[SIZE];
-	/**
-	 * Tracks character count, line count, line position.
+    int nth = -1;
+    int limit = 0;
+
+    int mark = -1;
+    char last = 0;
+
+
+    public void reset() {
+        line = 1;
+        pos = 0;
+
+        nth = -1;
+        limit = 0;
+
+        marked = false;
+        mark = -1;
+
+        last = 0;
+        back = false;
+    }
+
+    /**
+	 * Tracks character count, line count, line position. Loads+ buffer. Does bulk copy.
 	 *
 	 */
 	char read()
@@ -555,38 +650,36 @@ public class JSONReader
 			return last;
 		}
 
+		nth++;
+		// refill buffer as needed
 		if( nth == limit )
 		{
-			nth++;
-			fill();
+			if( marked && mark < nth )
+			{
+				sb.append( buf, mark + 1, nth - mark - 1 );
+			}
 			limit = reader.read( buf, 0, SIZE );
+			if( limit == -1 )
+            {
+                return (char) -1;
+            }
 			nth = 0;
-			mark = 0;
+			mark = -1;
 		}
-
 		char c = buf[ nth ];
-
-		nth++;
-
-//		if( c == '\n' || c == '\r' )
-//		{
-//			line++;
-//			pos = 0;
-//		}
-//		else
-//		{
-//			pos++;
-//		}
-//
-//		if( c == '\n' && last == '\r' )
-//			line--;
-//
-//		if( c == '\r' && last == '\n')
-//			line--;
-
 		last = c;
 
-		return c;
+		if( c == '\n' )
+		{
+			line++;
+			pos = 0;
+		}
+		else
+		{
+			pos++;
+		}
+
+        return c;
 	}
 
 	boolean back = false;
@@ -602,17 +695,49 @@ public class JSONReader
 		marked = true;
 	}
 
-	void unmark()
-	{
-		mark = -1;
-		marked = false;
-	}
+//	void fill()
+//	{
+//		if( marked && mark < nth )
+//		{
+//			sb.append( buf, mark + 1, nth - mark - 1 );
+//		}
+//		marked = false;
+//	}
 
 	void fill()
 	{
 		if( marked && mark < nth )
 		{
-			sb.append( buf, mark, nth - mark - 1 );
+			fill2();
 		}
+		marked = false;
 	}
+
+    void fill2()
+    {
+        sb.append( buf, mark + 1, nth - mark - 1 );
+    }
+
+    /**
+     * Override this method to use a different Map implementation. eg LinkedHashMap
+     * would preserve file order. ArrayMap would be more space efficient.
+     *
+     * @return
+     */
+    public Map<String, Object> createMap()
+    {
+        return new LinkedHashMap<>();
+    }
+
+
+    /**
+     * Override this method to use a different List implementation. For whatever reason.
+     *
+     * @return
+     */
+    public List<Object> createList()
+    {
+        return new ArrayList<>();
+    }
+
 }

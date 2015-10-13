@@ -35,7 +35,7 @@ public class Demo
 				"} ";
 //		payload = "{ 'A' : 'apple', 'B' : {} }";
 
-		Map map = jsonReader.parse( payload );
+		Map map = jsonReader.parseMap( payload );
 		System.out.println( map );
 	}
 

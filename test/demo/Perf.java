@@ -17,7 +17,8 @@ public class Perf
 		JSONReader jsonReader = new JSONReader();
 //
 //		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
-		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json" );
+//		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json" );
+		FileReader reader = new FileReader( "./data/whatever.json" );
 		StringBuilder sb = new StringBuilder();
 		while( true )
 		{
@@ -52,7 +53,7 @@ public class Perf
 //			Map map = jsonReader.parseRoot( payload );
 //				StringReader sparky = new StringReader( payload );
 
-				map = jsonReader.parse( payload );
+				map = jsonReader.parseMap( payload );
 //				sparky.reset();
 			}
 			long elapsed = System.currentTimeMillis() - start;

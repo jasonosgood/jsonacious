@@ -18,7 +18,7 @@ public class MyWrites
 	{
 		FileReader reader = new FileReader( "./data/whatever.json.pwd" );
 		JSONReader jsonReader = new JSONReader();
-		Map map = jsonReader.parse( reader );
+		Map map = jsonReader.parseMap( reader );
 //		LinkedHashMap<String,Object> map = new LinkedHashMap<>();
 //		map.put( "A", "apples" );
 //		map.put( "B", "banana" );

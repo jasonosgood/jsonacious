@@ -1,6 +1,6 @@
 package demo;
 
-import jsonacious.JSONTanker;
+import jsonacious.JSONReader;
 
 import java.io.FileReader;
 import java.util.Map;
@@ -13,7 +13,7 @@ public class PerfTank
 	public static void main( String[] args )
 		throws Exception
 	{
-		JSONTanker jsonReader = new JSONTanker();
+		JSONReader jsonReader = new JSONReader();
 //
 //		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
 		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json" );
