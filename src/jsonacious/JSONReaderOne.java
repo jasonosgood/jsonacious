@@ -5,9 +5,12 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class JSONReader
+public class JSONReaderOne
 {
 	public final static char EOF = (char) -1;
 	final static int SIZE = 1024;
@@ -100,6 +103,85 @@ public class JSONReader
 			}
 		}
 	}
+
+//	public String readString( char delim )
+//		throws IOException
+//	{
+//		sb.setLength( 0 );
+//		mark();
+//		char c;
+//		while( (  c = read() ) != delim )
+//		{
+//			if( c == '\\' ) {
+//				readEscapedString();
+//			}
+//		}
+//		fill();
+////		System.out.println( sb.toString() );
+//		return sb.toString();
+//	}
+//
+//	public void readEscapedString()
+//		throws IOException
+//	{
+//		fill();
+//		char c = read();
+//		switch( c )
+//		{
+//			case '"':
+//				sb.append( '"' );
+//				break;
+//
+//			case '/':
+//				sb.append( '/' );
+//				break;
+//
+//			case '\\':
+//				sb.append( '\\' );
+//				break;
+//
+//			case 'b':
+//				sb.append( '\b' );
+//				break;
+//
+//			case 'f':
+//				sb.append( '\f' );
+//				break;
+//
+//			case 'n':
+//				sb.append( '\n' );
+//				break;
+//
+//			case 'r':
+//				sb.append( '\r' );
+//				break;
+//
+//			case 't':
+//				sb.append( '\t' );
+//				break;
+//
+//			case 'u':
+//				int hex =
+//					( readHex() << 12 ) +
+//						( readHex() << 8 ) +
+//						( readHex() << 4 ) +
+//						readHex();
+////							int hex =
+////								readHex() << 12;
+////							hex += readHex() << 8;
+////							hex += readHex() << 4;
+////							hex += readHex();
+//				sb.append( (char) hex );
+////							char hex = readHexZ();
+////							sb.append( (char) hex );
+//				break;
+//
+//			default:
+//				throw new ParseException( "what is '\\" + c + "'?", line, pos );
+//		}
+//
+//		mark();
+//	}
 
 	public Map<String, Object> parseMap()
 		throws IOException
@@ -376,7 +458,7 @@ public class JSONReader
 		}
 	}
 
-	public String readString( char delim )
+    public String readString( char delim )
 		throws IOException
 	{
 		sb.setLength( 0 );
@@ -384,155 +466,76 @@ public class JSONReader
 		char c;
 		while( (  c = read() ) != delim )
 		{
-//			if( c == '\\' ) {
-//				readEscapedString();
-//			}
+			switch( c )
+			{
+				case '\\':
+				{
+					fill();
+					c = read();
+					switch( c )
+					{
+						case '"':
+							sb.append( '"' );
+							break;
+
+						case '/':
+							sb.append( '/' );
+							break;
+
+						case '\\':
+							sb.append( '\\' );
+							break;
+
+						case 'b':
+							sb.append( '\b' );
+							break;
+
+						case 'f':
+							sb.append( '\f' );
+							break;
+
+						case 'n':
+							sb.append( '\n' );
+							break;
+
+						case 'r':
+							sb.append( '\r' );
+							break;
+
+						case 't':
+							sb.append( '\t' );
+							break;
+
+						case 'u':
+							int hex =
+								( readHex() << 12 ) +
+								( readHex() << 8 ) +
+								( readHex() << 4 ) +
+								readHex();
+//							int hex =
+//								readHex() << 12;
+//							hex += readHex() << 8;
+//							hex += readHex() << 4;
+//							hex += readHex();
+							sb.append( (char) hex );
+//							char hex = readHexZ();
+//							sb.append( (char) hex );
+							break;
+
+						default:
+							throw new ParseException( "what is '\\" + c + "'?", line, pos );
+					}
+
+					mark();
+					break;
+				}
+			}
 		}
 		fill();
 //		System.out.println( sb.toString() );
 		return sb.toString();
 	}
 
-	public void readEscapedString()
-		throws IOException
-	{
-		fill();
-		char c = read();
-		switch( c )
-		{
-			case '"':
-				sb.append( '"' );
-				break;
-
-			case '/':
-				sb.append( '/' );
-				break;
-
-			case '\\':
-				sb.append( '\\' );
-				break;
-
-			case 'b':
-				sb.append( '\b' );
-				break;
-
-			case 'f':
-				sb.append( '\f' );
-				break;
-
-			case 'n':
-				sb.append( '\n' );
-				break;
-
-			case 'r':
-				sb.append( '\r' );
-				break;
-
-			case 't':
-				sb.append( '\t' );
-				break;
-
-			case 'u':
-				int hex =
-					( readHex() << 12 ) +
-						( readHex() << 8 ) +
-						( readHex() << 4 ) +
-						readHex();
-//							int hex =
-//								readHex() << 12;
-//							hex += readHex() << 8;
-//							hex += readHex() << 4;
-//							hex += readHex();
-				sb.append( (char) hex );
-//							char hex = readHexZ();
-//							sb.append( (char) hex );
-				break;
-
-			default:
-				throw new ParseException( "what is '\\" + c + "'?", line, pos );
-		}
-
-		mark();
-	}
-
-//public String readString( char delim )
-//		throws IOException
-//	{
-//		sb.setLength( 0 );
-//		mark();
-//		char c;
-//		while( (  c = read() ) != delim )
-//		{
-//			switch( c )
-//			{
-//				case '\\':
-//				{
-//					fill();
-//					c = read();
-//					switch( c )
-//					{
-//						case '"':
-//							sb.append( '"' );
-//							break;
-//
-//						case '/':
-//							sb.append( '/' );
-//							break;
-//
-//						case '\\':
-//							sb.append( '\\' );
-//							break;
-//
-//						case 'b':
-//							sb.append( '\b' );
-//							break;
-//
-//						case 'f':
-//							sb.append( '\f' );
-//							break;
-//
-//						case 'n':
-//							sb.append( '\n' );
-//							break;
-//
-//						case 'r':
-//							sb.append( '\r' );
-//							break;
-//
-//						case 't':
-//							sb.append( '\t' );
-//							break;
-//
-//						case 'u':
-//							int hex =
-//								( readHex() << 12 ) +
-//								( readHex() << 8 ) +
-//								( readHex() << 4 ) +
-//								readHex();
-////							int hex =
-////								readHex() << 12;
-////							hex += readHex() << 8;
-////							hex += readHex() << 4;
-////							hex += readHex();
-//							sb.append( (char) hex );
-////							char hex = readHexZ();
-////							sb.append( (char) hex );
-//							break;
-//
-//						default:
-//							throw new ParseException( "what is '\\" + c + "'?", line, pos );
-//					}
-//
-//					mark();
-//					break;
-//				}
-//			}
-//		}
-//		fill();
-////		System.out.println( sb.toString() );
-//		return sb.toString();
-//	}
-//
 	public Number readNumber( char c )
 		throws IOException
 	{
