@@ -168,7 +168,7 @@ public class JSONReader
 			{
 				case '"':
 				case '\'':
-					return readString( c );
+					return parseString( c );
 
 				// whitespace
 				case ' ':
@@ -322,7 +322,7 @@ public class JSONReader
 
 				case '\'':
 				case '"':
-					return readString( c );
+					return parseString( c );
 
 				case '[':
 					return parseList();
@@ -376,24 +376,45 @@ public class JSONReader
 		}
 	}
 
-	public String readString( char delim )
+	public String parseString( char delim )
 		throws IOException
 	{
 		sb.setLength( 0 );
 		mark();
-		char c;
-		while( (  c = read() ) != delim )
-		{
+//		char c;
+//		while( (  c = read() ) != delim )
+//		{
 //			if( c == '\\' ) {
-//				readEscapedString();
+//				parsedEscapedString();
 //			}
-		}
-		fill();
-//		System.out.println( sb.toString() );
-		return sb.toString();
-	}
+//		}
+//
+//		fill();
+////		System.out.println( sb.toString() );
+//		return sb.toString();
 
-	public void readEscapedString()
+        while( true )
+        {
+            char c = read();
+            switch( c )
+            {
+                case '\'':
+                case '\"':
+                    if( c != delim ) break;
+                    fill();
+                    return sb.toString();
+
+                case '\\':
+                    parsedEscapedString();
+                    break;
+
+                case EOF:
+                    throw new ParseException( "EOF, expected end of string", line, pos );
+            }
+        }
+    }
+
+	public void parsedEscapedString()
 		throws IOException
 	{
 		fill();
@@ -455,84 +476,6 @@ public class JSONReader
 		mark();
 	}
 
-//public String readString( char delim )
-//		throws IOException
-//	{
-//		sb.setLength( 0 );
-//		mark();
-//		char c;
-//		while( (  c = read() ) != delim )
-//		{
-//			switch( c )
-//			{
-//				case '\\':
-//				{
-//					fill();
-//					c = read();
-//					switch( c )
-//					{
-//						case '"':
-//							sb.append( '"' );
-//							break;
-//
-//						case '/':
-//							sb.append( '/' );
-//							break;
-//
-//						case '\\':
-//							sb.append( '\\' );
-//							break;
-//
-//						case 'b':
-//							sb.append( '\b' );
-//							break;
-//
-//						case 'f':
-//							sb.append( '\f' );
-//							break;
-//
-//						case 'n':
-//							sb.append( '\n' );
-//							break;
-//
-//						case 'r':
-//							sb.append( '\r' );
-//							break;
-//
-//						case 't':
-//							sb.append( '\t' );
-//							break;
-//
-//						case 'u':
-//							int hex =
-//								( readHex() << 12 ) +
-//								( readHex() << 8 ) +
-//								( readHex() << 4 ) +
-//								readHex();
-////							int hex =
-////								readHex() << 12;
-////							hex += readHex() << 8;
-////							hex += readHex() << 4;
-////							hex += readHex();
-//							sb.append( (char) hex );
-////							char hex = readHexZ();
-////							sb.append( (char) hex );
-//							break;
-//
-//						default:
-//							throw new ParseException( "what is '\\" + c + "'?", line, pos );
-//					}
-//
-//					mark();
-//					break;
-//				}
-//			}
-//		}
-//		fill();
-////		System.out.println( sb.toString() );
-//		return sb.toString();
-//	}
-//
 	public Number readNumber( char c )
 		throws IOException
 	{

@@ -18,6 +18,56 @@ import java.util.Map;
  */
 public class JSONDecoder
 {
+	final static int SIZE = 1024;
+	Reader reader = null;
+	HashMap<Class,ConstructorAccess> caMap = new HashMap<>();
+
+//	public <V> List<V> createList( Class<V> listClass )
+//	{
+//		return new ArrayList<Object>();
+//	}
+	HashMap<Class,MethodAccess> maMap = new HashMap<>();
+	StringBuilder sb = new StringBuilder();
+	int mark = -1;
+	int nth = 0;
+	int line = 0;
+	int pos = 0;
+	char last = 0;
+	int limit = 0;
+	char[] buf = new char[SIZE];
+	boolean back = false;
+
+//	public char readHexZ()
+//		throws IOException
+//	{
+//		int result = 0;
+//		for( int i = 0; i < 4; i++ )
+//		{
+//			result <<= 4;
+//			char x = read();
+//			if( x >= '0' && x <= '9' )
+//			{
+//				result += ( x - '0' );
+//				continue;
+//			}
+//			if( x >= 'a' && x <= 'h' )
+//			{
+//				result += ( x - 'a' + 10 );
+//				continue;
+//			}
+//			if( x >= 'A' && x <= 'H' )
+//			{
+//				result += ( x - 'A' + 10 );
+//				continue;
+//			}
+//			throw new IOException( "not a hex digit " + (char) x );
+//		}
+//		return (char) result;
+//	}
+	boolean marked = false;
+	HashMap<ClassMethodKey,Integer> indexMap = new HashMap<>();
+	ClassMethodKey spareKey = new ClassMethodKey();
+
 	public <T> T parse( String payload, Class<T> clazz  )
 		throws
 		Exception
@@ -25,8 +75,6 @@ public class JSONDecoder
 		Reader reader = new StringReader( payload );
 		return parse( reader, clazz );
 	}
-
-	Reader reader = null;
 
 	public <T> T parse( Reader reader, Class<T> clazz )
 		throws
@@ -80,14 +128,6 @@ public class JSONDecoder
 			throw e;
 		}
 	}
-
-//	public <V> List<V> createList( Class<V> listClass )
-//	{
-//		return new ArrayList<Object>();
-//	}
-
-	HashMap<Class,ConstructorAccess> caMap = new HashMap<>();
-	HashMap<Class,MethodAccess> maMap = new HashMap<>();
 
 	public <T> T parseMap( Class<T> parentClazz )
 		throws IOException, MethodNotFoundException
@@ -240,7 +280,7 @@ public class JSONDecoder
 							break;
 
 						default:
-//							number = readNumber( c );
+//							number = parseNumber( c );
 							break;
 
 					}
@@ -271,7 +311,6 @@ public class JSONDecoder
 		if (propertyName.length() == 0) return null;
 		return propertyName.substring( 0, 1 ).toUpperCase() + propertyName.substring( 1 );
 	}
-
 
 	public <U> List<U> parseList( Class<U> itemClazz )
 		throws IOException, MethodNotFoundException
@@ -369,8 +408,6 @@ public class JSONDecoder
 		return parent;
 	}
 
-	StringBuilder sb = new StringBuilder();
-
 	public String readString( int delim )
 		throws IOException
 	{
@@ -439,7 +476,7 @@ public class JSONDecoder
 							break;
 
 						default:
-							throw new IOException( "what is '\\" + (char) c + "'?" );
+							throw new IOException( "what is '\\" + c + "'?" );
 					}
 
 					mark();
@@ -465,7 +502,7 @@ public class JSONDecoder
 		throws IOException
 	{
 		sb.setLength( 0 );
-		sb.append( (char) c );
+		sb.append( c );
 		mark();
 		boolean decimal = false;
 		loop:
@@ -556,7 +593,7 @@ public class JSONDecoder
 		throws IOException
 	{
 		sb.setLength( 0 );
-		sb.append( (char) c );
+		sb.append( c );
 		mark();
 		boolean decimal = false;
 		loop:
@@ -618,36 +655,8 @@ public class JSONDecoder
 //			System.out.print( x - 'A' + 10 );
 			return x - 'A' + 10;
 		}
-		throw new IOException( "not a hex digit " + (char) x );
+		throw new IOException( "not a hex digit " + x );
 	}
-
-//	public char readHexZ()
-//		throws IOException
-//	{
-//		int result = 0;
-//		for( int i = 0; i < 4; i++ )
-//		{
-//			result <<= 4;
-//			char x = read();
-//			if( x >= '0' && x <= '9' )
-//			{
-//				result += ( x - '0' );
-//				continue;
-//			}
-//			if( x >= 'a' && x <= 'h' )
-//			{
-//				result += ( x - 'a' + 10 );
-//				continue;
-//			}
-//			if( x >= 'A' && x <= 'H' )
-//			{
-//				result += ( x - 'A' + 10 );
-//				continue;
-//			}
-//			throw new IOException( "not a hex digit " + (char) x );
-//		}
-//		return (char) result;
-//	}
 
 	public void consume( char e )
 		throws IOException
@@ -658,16 +667,6 @@ public class JSONDecoder
 			throw new IOException( "expected '" + e + "', found '" + c + "'" );
 		}
 	}
-
-	int mark = -1;
-	int nth = 0;
-	int line = 0;
-	int pos = 0;
-	char last = 0;
-	int limit = 0;
-
-	final static int SIZE = 1024;
-	char[] buf = new char[SIZE];
 
 	/**
 	 * Tracks character count, line count, line position. Refills buffer as necessary.
@@ -722,13 +721,11 @@ public class JSONDecoder
 		return c;
 	}
 
-	boolean back = false;
 	void pushBack()
 	{
 		back = true;
 	}
 
-	boolean marked = false;
 	void mark()
 	{
 		mark = nth;
@@ -748,33 +745,6 @@ public class JSONDecoder
 			sb.append( buf, mark, nth - mark - 1 );
 		}
 	}
-
-	class ClassMethodKey
-	{
-		Class c;
-		String m;
-
-		public boolean equals( Object object )
-		{
-			if( this == object ) return true;
-			if( object instanceof ClassMethodKey )
-			{
-				ClassMethodKey that = (ClassMethodKey) object;
-				boolean a = this.c.equals( that.c );
-				boolean b = this.m.equals( that.m );
-				return a && b;
-			}
-			return false;
-		}
-
-		public int hashCode()
-		{
-			return c.hashCode() * m.hashCode();
-		}
-	}
-
-	HashMap<ClassMethodKey,Integer> indexMap = new HashMap<>();
-	ClassMethodKey spareKey = new ClassMethodKey();
 
 	public int findMethodIndex( MethodAccess ma, String name )
 		throws MethodNotFoundException
@@ -838,6 +808,30 @@ public class JSONDecoder
 		else
 		{
 			return (Class) y;
+		}
+	}
+
+	class ClassMethodKey
+	{
+		Class c;
+		String m;
+
+		public boolean equals( Object object )
+		{
+			if( this == object ) return true;
+			if( object instanceof ClassMethodKey )
+			{
+				ClassMethodKey that = (ClassMethodKey) object;
+				boolean a = this.c.equals( that.c );
+				boolean b = this.m.equals( that.m );
+				return a && b;
+			}
+			return false;
+		}
+
+		public int hashCode()
+		{
+			return c.hashCode() * m.hashCode();
 		}
 	}
 

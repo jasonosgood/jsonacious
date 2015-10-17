@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JSONReaderOne
+public class JSONMaker
 {
 	public final static char EOF = (char) -1;
 	final static int SIZE = 1024;
@@ -32,8 +32,12 @@ public class JSONReaderOne
 	 * Returns either Map or List.
 	 */
 	public Object parse( String payload )
-		throws IOException
-	{
+        throws ParseException
+    {
+        if( payload == null )
+        {
+            throw new NullPointerException( "payload" );
+        }
 		Reader reader = new StringReader( payload );
 		return parse( reader );
 	}
@@ -42,7 +46,7 @@ public class JSONReaderOne
 	 * Returns either Map or List.
 	 */
 	public Object parse( Reader reader )
-		throws IOException
+		throws ParseException
 	{
 		reset();
 		this.reader = reader;
@@ -50,7 +54,7 @@ public class JSONReaderOne
 	}
 
 	Object parseRoot()
-		throws IOException
+		throws ParseException
 	{
 		while( true )
 		{
@@ -61,147 +65,131 @@ public class JSONReaderOne
 					return parseList();
 
 				case '{':
-					return parseMap();
-			}
+                {
+                    Class clazz = LinkedHashMap.class;
+                    return parseMap( clazz );
+                }
+            }
 		}
 	}
 
-	public Map<String, Object> parseMap( String payload )
-		throws IOException
+//	public Map<String, Object> parseMap( String payload )
+	public Map parseMap( String payload )
+		throws ParseException
 	{
 		Reader reader = new StringReader( payload );
 		return parseMap( reader );
 	}
 
-	public Map<String, Object> parseMap( Reader reader )
-		throws IOException
+//	public Map<String, Object> parseMap( Reader reader )
+	public Map parseMap( Reader reader )
+		throws ParseException
 	{
-		reset();
-		this.reader = reader;
-
-		char c;
-		while( true )
-		{
-			c = read();
-			switch( c )
-			{
-				case '{':
-					return parseMap();
-
-				// whitespace
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-					break;
-
-				case EOF:
-					throw new ParseException( "EOF, expected '{'", line, pos );
-
-				default:
-					throw new ParseException( "map not found", '{', c, line, pos );
-			}
-		}
-	}
-
-//	public String readString( char delim )
-//		throws IOException
-//	{
-//		sb.setLength( 0 );
-//		mark();
+        Class clazz = LinkedHashMap.class;
+//        return (Map <String,Object>) parse( reader, clazz );
+        return (Map) parse( reader, clazz );
+//		reset();
+//		this.reader = reader;
+//
 //		char c;
-//		while( (  c = read() ) != delim )
+//		while( true )
 //		{
-//			if( c == '\\' ) {
-//				readEscapedString();
+//			c = read();
+//			switch( c )
+//			{
+//				case '{':
+//                {
+//                    Class clazz = LinkedHashMap.class;
+//                    return (Map<String,Object>) parseMap( clazz );
+//                }
+//                // whitespace
+//				case ' ':
+//				case '\t':
+//				case '\r':
+//				case '\n':
+//					break;
+//
+//				case EOF:
+//					throw new ParseException( "EOF, expected '{'", line, pos );
+//
+//				default:
+//					throw new ParseException( "map not found", '{', c, line, pos );
 //			}
 //		}
-//		fill();
-////		System.out.println( sb.toString() );
-//		return sb.toString();
-//	}
-//
-//	public void readEscapedString()
-//		throws IOException
-//	{
-//		fill();
-//		char c = read();
-//		switch( c )
-//		{
-//			case '"':
-//				sb.append( '"' );
-//				break;
-//
-//			case '/':
-//				sb.append( '/' );
-//				break;
-//
-//			case '\\':
-//				sb.append( '\\' );
-//				break;
-//
-//			case 'b':
-//				sb.append( '\b' );
-//				break;
-//
-//			case 'f':
-//				sb.append( '\f' );
-//				break;
-//
-//			case 'n':
-//				sb.append( '\n' );
-//				break;
-//
-//			case 'r':
-//				sb.append( '\r' );
-//				break;
-//
-//			case 't':
-//				sb.append( '\t' );
-//				break;
-//
-//			case 'u':
-//				int hex =
-//					( readHex() << 12 ) +
-//						( readHex() << 8 ) +
-//						( readHex() << 4 ) +
-//						readHex();
-////							int hex =
-////								readHex() << 12;
-////							hex += readHex() << 8;
-////							hex += readHex() << 4;
-////							hex += readHex();
-//				sb.append( (char) hex );
-////							char hex = readHexZ();
-////							sb.append( (char) hex );
-//				break;
-//
-//			default:
-//				throw new ParseException( "what is '\\" + c + "'?", line, pos );
-//		}
-//
-//		mark();
-//	}
-
-	public Map<String, Object> parseMap()
-		throws IOException
-	{
-		Map<String, Object> map = createMap();
-
-		while( true )
-		{
-			String key = parseKey();
-			if( key == null ) return map;
-
-			parseColon();
-
-			Object value = parseValue();
-
-			map.put( key, value );
-
-			if( doneMap() ) return map;
-		}
 	}
+
+    public <T> T parse( String payload, Class<T> clazz )
+        throws ParseException
+    {
+        Reader reader = new StringReader( payload );
+        return parse( reader, clazz );
+    }
+
+    public <T> T parse( Reader reader, Class<T> clazz )
+        throws ParseException
+    {
+        reset();
+        this.reader = reader;
+
+        char c;
+        while( true )
+        {
+            c = read();
+            switch( c )
+            {
+                case '{':
+                {
+                    return (T) parseMap( clazz );
+                }
+                // whitespace
+                case ' ':
+                case '\t':
+                case '\r':
+                case '\n':
+                    break;
+
+                case EOF:
+                    throw new ParseException( "EOF, expected '{'", line, pos );
+
+                default:
+                    throw new ParseException( "map not found", '{', c, line, pos );
+            }
+        }
+    }
+
+
+    Object parseMap( Class clazz )
+		throws ParseException
+	{
+        try
+        {
+            Object target = clazz.newInstance();
+            while( true ) {
+                String key = parseKey();
+                if( key == null ) return target;
+
+                parseColon();
+
+                Object value = parseValue();
+
+                put( target, key, value );
+
+                if( doneMap() ) return target;
+            }
+        }
+        catch( ReflectiveOperationException e )
+        {
+            e.printStackTrace();
+            return null;
+        }
+//		Map<String, Object> map = createMap();
+
+	}
+
+    public void put( Object target, String key, Object value )
+    {
+        ((Map) target).put( key, value );
+    }
 
 	/**
 	 * Returns true if next char is a comma ',', false if right curly bracket '}'.
@@ -209,7 +197,7 @@ public class JSONReaderOne
 	 * Otherwise throws an exception.
 	 */
 	public boolean doneMap()
-		throws IOException
+		throws ParseException
 	{
 		char c;
 		while( true )
@@ -240,7 +228,7 @@ public class JSONReaderOne
 	}
 
 	public String parseKey()
-		throws IOException
+		throws ParseException
 	{
 		char c;
 		while( true )
@@ -250,7 +238,7 @@ public class JSONReaderOne
 			{
 				case '"':
 				case '\'':
-					return readString( c );
+					return parseString( c );
 
 				// whitespace
 				case ' ':
@@ -273,7 +261,7 @@ public class JSONReaderOne
 	}
 
 	public void parseColon()
-		throws IOException
+		throws ParseException
 	{
 		char c;
 		while( true )
@@ -301,7 +289,7 @@ public class JSONReaderOne
 	}
 
 	public List<Object> parseList( Reader reader )
-		throws IOException
+		throws ParseException
 	{
 		reset();
 		this.reader = reader;
@@ -332,7 +320,7 @@ public class JSONReaderOne
 	}
 
 	public List<Object> parseList()
-		throws IOException
+		throws ParseException
 	{
 		List<Object> list = createList();
 
@@ -349,13 +337,15 @@ public class JSONReaderOne
 		}
 	}
 
+//    void add( )
+
 	/**
 	 * Returns true if next char is a comma ',', false if right square bracket ']'.
 	 * Eats leading whitespace.
 	 * Otherwise throws an exception.
 	 */
 	public boolean doneList()
-		throws IOException
+		throws ParseException
 	{
 		char c;
 
@@ -387,7 +377,7 @@ public class JSONReaderOne
 	}
 
 	public Object parseValue()
-		throws IOException
+		throws ParseException
 	{
 		while( true )
 		{
@@ -404,13 +394,16 @@ public class JSONReaderOne
 
 				case '\'':
 				case '"':
-					return readString( c );
+					return parseString( c );
 
 				case '[':
 					return parseList();
 
 				case '{':
-					return parseMap();
+                {
+                    Class clazz = LinkedHashMap.class;
+                    return parseMap( clazz );
+                }
 
 				case '-':
 				case '0':
@@ -423,7 +416,7 @@ public class JSONReaderOne
 				case '7':
 				case '8':
 				case '9':
-					return readNumber( c );
+					return parseNumber( c );
 
 				case 'n':
 					consume( 'u' );
@@ -458,86 +451,108 @@ public class JSONReaderOne
 		}
 	}
 
-    public String readString( char delim )
-		throws IOException
+	public String parseString( char delim )
+		throws ParseException
 	{
 		sb.setLength( 0 );
 		mark();
-		char c;
-		while( (  c = read() ) != delim )
+//		char c;
+//		while( (  c = read() ) != delim )
+//		{
+//			if( c == '\\' ) {
+//				parsedEscapedString();
+//			}
+//		}
+//
+//		fill();
+////		System.out.println( sb.toString() );
+//		return sb.toString();
+
+        while( true )
+        {
+            char c = read();
+            switch( c )
+            {
+                case '\'':
+                case '\"':
+                    if( c != delim ) break;
+                    fill();
+                    return sb.toString();
+
+                case '\\':
+                    parsedEscapedString();
+                    break;
+
+                case EOF:
+                    throw new ParseException( "EOF, expected end of string", line, pos );
+            }
+        }
+    }
+
+	public void parsedEscapedString()
+		throws ParseException
+	{
+		fill();
+		char c = read();
+		switch( c )
 		{
-			switch( c )
-			{
-				case '\\':
-				{
-					fill();
-					c = read();
-					switch( c )
-					{
-						case '"':
-							sb.append( '"' );
-							break;
+			case '"':
+				sb.append( '"' );
+				break;
 
-						case '/':
-							sb.append( '/' );
-							break;
+			case '/':
+				sb.append( '/' );
+				break;
 
-						case '\\':
-							sb.append( '\\' );
-							break;
+			case '\\':
+				sb.append( '\\' );
+				break;
 
-						case 'b':
-							sb.append( '\b' );
-							break;
+			case 'b':
+				sb.append( '\b' );
+				break;
 
-						case 'f':
-							sb.append( '\f' );
-							break;
+			case 'f':
+				sb.append( '\f' );
+				break;
 
-						case 'n':
-							sb.append( '\n' );
-							break;
+			case 'n':
+				sb.append( '\n' );
+				break;
 
-						case 'r':
-							sb.append( '\r' );
-							break;
+			case 'r':
+				sb.append( '\r' );
+				break;
 
-						case 't':
-							sb.append( '\t' );
-							break;
+			case 't':
+				sb.append( '\t' );
+				break;
 
-						case 'u':
-							int hex =
-								( readHex() << 12 ) +
-								( readHex() << 8 ) +
-								( readHex() << 4 ) +
-								readHex();
+			case 'u':
+				int hex =
+					( readHex() << 12 ) +
+						( readHex() << 8 ) +
+						( readHex() << 4 ) +
+						readHex();
 //							int hex =
 //								readHex() << 12;
 //							hex += readHex() << 8;
 //							hex += readHex() << 4;
 //							hex += readHex();
-							sb.append( (char) hex );
+				sb.append( (char) hex );
 //							char hex = readHexZ();
 //							sb.append( (char) hex );
-							break;
+				break;
 
-						default:
-							throw new ParseException( "what is '\\" + c + "'?", line, pos );
-					}
-
-					mark();
-					break;
-				}
-			}
+			default:
+				throw new ParseException( "what is '\\" + c + "'?", line, pos );
 		}
-		fill();
-//		System.out.println( sb.toString() );
-		return sb.toString();
+
+		mark();
 	}
 
-	public Number readNumber( char c )
-		throws IOException
+	public Number parseNumber( char c )
+		throws ParseException
 	{
 		sb.setLength( 0 );
 		sb.append( c );
@@ -567,10 +582,10 @@ public class JSONReaderOne
 				case 'e':
 					break;
 
-				case -1:
-					throw new IOException( "unexpected end of file" );
+				case EOF:
+                    throw new ParseException( "EOF, expected number", line, pos );
 
-				default:
+                default:
 					break loop;
 			}
 		}
@@ -596,7 +611,7 @@ public class JSONReaderOne
 			}
 			catch( Exception e )
 			{
-				throw new IOException( e );
+				throw new ParseException( e, line, pos );
 			}
 		}
 		else
@@ -619,7 +634,7 @@ public class JSONReaderOne
 					}
 					catch( Exception e3 )
 					{
-						throw new IOException( e3 );
+						throw new ParseException( e3, line, pos );
 					}
 				}
 			}
@@ -638,7 +653,7 @@ public class JSONReaderOne
 	'h' 104
 	 */
 	public int readHex()
-		throws IOException
+		throws ParseException
 	{
 
 		char x = read();
@@ -657,7 +672,7 @@ public class JSONReaderOne
 //			System.out.print( x - 'A' + 10 );
 			return x - 'A' + 10;
 		}
-		throw new IOException( "not a hex digit " + x );
+		throw new ParseException( "not a hex digit " + x, line, pos );
 	}
 
 	public char readHexZ()
@@ -689,7 +704,7 @@ public class JSONReaderOne
 	}
 
 	public void consume( char expected )
-		throws IOException
+		throws ParseException
 	{
 		char c = read();
 		if( c != expected )
@@ -717,7 +732,7 @@ public class JSONReaderOne
 	 *
 	 */
 	char read()
-		throws IOException
+		throws ParseException
 	{
 		if( back )
 		{
@@ -725,6 +740,8 @@ public class JSONReaderOne
 			return last;
 		}
 
+        try
+        {
 		nth++;
 		// refill buffer as needed
 		if( nth == limit )
@@ -755,6 +772,11 @@ public class JSONReaderOne
 		}
 
 		return c;
+        }
+        catch( IOException e )
+        {
+            throw new ParseException( e, line, pos );
+        }
 	}
 
 	void pushBack()
@@ -791,16 +813,16 @@ public class JSONReaderOne
 		sb.append( buf, mark + 1, nth - mark - 1 );
 	}
 
-	/**
-	 * Override this method to use a different Map implementation. eg LinkedHashMap
-	 * would preserve file order. ArrayMap would be more space efficient.
-	 *
-	 * @return
-	 */
-	public Map<String, Object> createMap()
-	{
-		return new LinkedHashMap<>();
-	}
+//	/**
+//	 * Override this method to use a different Map implementation. eg LinkedHashMap
+//	 * would preserve file order. ArrayMap would be more space efficient.
+//	 *
+//	 * @return
+//	 */
+//	public Map<String, Object> createMap()
+//	{
+//		return new LinkedHashMap<>();
+//	}
 
 
 	/**

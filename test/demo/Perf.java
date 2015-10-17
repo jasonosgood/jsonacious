@@ -18,7 +18,8 @@ public class Perf
 //
 //		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json.pwd" );
 //		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/data/whatever.json" );
-		FileReader reader = new FileReader( "./data/whatever.json" );
+//		FileReader reader = new FileReader( "./data/whatever.json" );
+		FileReader reader = new FileReader( "./data/content.json" );
 		StringBuilder sb = new StringBuilder();
 		while( true )
 		{
@@ -38,6 +39,7 @@ public class Perf
 //		String payload = "{ 'A' : '\\ra' }";
 //		sparky.reset();
 		Map map = null;
+
 
 		for( int x = 0; x < 10; x++ )
 		{

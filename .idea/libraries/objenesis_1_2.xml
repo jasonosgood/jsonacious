@@ -5,8 +5,6 @@
       <root url="jar://$PROJECT_DIR$/lib/reflectasm-1.09-shaded.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="file://$PROJECT_DIR$/../json/reflectasm/src" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>
