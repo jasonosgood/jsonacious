@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-public class JSONReaderLA
+public class JSONReader
 {
 	public final static char EOF = (char) -1;
 	final static int SIZE = 4096;
