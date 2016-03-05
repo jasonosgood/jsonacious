@@ -37,7 +37,7 @@ public class JSONDecoder
 	char[] buf = new char[SIZE];
 	boolean back = false;
 
-//	public char readHexZ()
+//	public char hex()
 //		throws IOException
 //	{
 //		int result = 0;
@@ -470,7 +470,7 @@ public class JSONDecoder
 							hex += readHex();
 //							System.out.println( " = " + hex );
 //							sb.append( (char) hex );
-//							char hex = readHexZ();
+//							char hex = hex();
 							sb.append( hex );
 
 							break;

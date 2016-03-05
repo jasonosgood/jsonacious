@@ -2,6 +2,8 @@ package jsonacious;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class JSONReaderLA
@@ -90,7 +92,6 @@ public class JSONReaderLA
 		// Fully "read" String into buffer
 		buf = content.toCharArray();
 		limit = buf.length;
-
 
 		switch( la() )
 		{
@@ -209,6 +210,7 @@ public class JSONReaderLA
 	public Object value()
 		throws IOException
 	{
+		mark();
 		switch( la() )
 		{
 			case '"':
@@ -300,53 +302,41 @@ public class JSONReaderLA
 		switch( la() )
 		{
 			case '"':
-				sb.append( '"' ); // 34
+				sb.append( '"' ); // ascii 34
 				break;
 
 			case '/':
-				sb.append( '/' ); // 47
+				sb.append( '/' ); // ascii 47
 				break;
 
 			case '\\':
-				sb.append( '\\' ); // 92
+				sb.append( '\\' ); // ascii 92
 				break;
 
 			case 'b':
-				sb.append( '\b' ); // 08
+				sb.append( '\b' ); // ascii 08
 				break;
 
 			case 't':
-				sb.append( '\t' ); // 09
+				sb.append( '\t' ); // ascii 09
 				break;
 
 			case 'n':
-				sb.append( '\n' ); // 10
+				sb.append( '\n' ); // ascii 10
 				break;
 
 			case 'f':
-				sb.append( '\f' ); // 12
+				sb.append( '\f' ); // ascii 12
 				break;
 
 			case 'r':
-				sb.append( '\r' ); // 13
+				sb.append( '\r' ); // ascii 13
 				break;
 
-
-//			case 'u':
-////				int hex =
-////					( readHex() << 12 ) +
-////						( readHex() << 8 ) +
-////						( readHex() << 4 ) +
-////						readHex();
-//////							int hex =
-//////								readHex() << 12;
-//////							hex += readHex() << 8;
-//////							hex += readHex() << 4;
-//////							hex += readHex();
-////				sb.append( (char) hex );
-//							char hex = readHexZ();
-//							sb.append( (char) hex );
-//				break;
+			case 'u':
+				char hex = hex();
+				sb.append( hex );
+				break;
 
 			default:
 				throw new ParseException( "what is '\\" + la() + "'?", line, pos );
@@ -355,11 +345,10 @@ public class JSONReaderLA
 		mark();
 	}
 
-	public Object number()
+	public Number number()
 		throws IOException
 	{
 		sb.setLength( 0 );
-		mark();
 
 		boolean decimal = false;
 //		loop:
@@ -391,122 +380,92 @@ public class JSONReaderLA
 
 				default:
 					fill();
-					String value = sb.toString();
-//					current = c;
-//					la = false;
-					return value;
+					String value = sb.toString().trim();
+
+					return toNumber( value, decimal );
 			}
 		}
-//
-//		Number result;
-//		String value = sb.toString();
-//		if( decimal )
-//		{
-//			try
-//			{
-//				result = Float.parseFloat( value );
-//				if( Float.isInfinite( result.floatValue() ))
-//				{
-//					result = Double.parseDouble( value );
-//					if( Double.isInfinite( result.doubleValue() ))
-//					{
-//						result = new BigDecimal( value );
-//					}
-//				}
-//			}
-//			catch( Exception e )
-//			{
-//				throw new IOException( e );
-//			}
-//		}
-//		else
-//		{
-//			try
-//			{
-//				result = Integer.parseInt( value );
-//			}
-//			catch( Exception e )
-//			{
-//				try
-//				{
-//					result = Long.parseLong( value );
-//				}
-//				catch( Exception e2 )
-//				{
-//					try
-//					{
-//						result = new BigInteger( value );
-//					}
-//					catch( Exception e3 )
-//					{
-//						throw new IOException( e3 );
-//					}
-//				}
-//			}
-//		}
-//
-////		System.out.println( result );
-//		return result;
 	}
 
-	/*
-	'0' 48
-	'9' 57
-	'A' 65
-	'H' 72
-	'a' 97
-	'h' 104
-	 */
-//	public int readHex()
-//		throws IOException
-//	{
-//
-//		char x = readX();
-//		if( x >= '0' && x <= '9' )
-//		{
-////			System.out.print( x - '0' );
-//			return x - '0';
-//		}
-//		if( x >= 'a' && x <= 'h' )
-//		{
-////			System.out.print( x - 'a' + 10 );
-//			return x - 'a' + 10;
-//		}
-//		if( x >= 'A' && x <= 'H' )
-//		{
-////			System.out.print( x - 'A' + 10 );
-//			return x - 'A' + 10;
-//		}
-//		throw new IOException( "not a hex digit " + x );
-//	}
+	public Number toNumber( String value, boolean decimal )
+		throws IOException
+	{
+		Number result;
+		if( decimal )
+		{
+			try
+			{
+				result = Float.parseFloat( value );
+				if( Float.isInfinite( result.floatValue() ))
+				{
+					result = Double.parseDouble( value );
+					if( Double.isInfinite( result.doubleValue() ))
+					{
+						result = new BigDecimal( value );
+					}
+				}
+			}
+			catch( Exception e )
+			{
+				throw new IOException( e );
+			}
+		}
+		else
+		{
+			try
+			{
+				result = Integer.parseInt( value );
+			}
+			catch( Exception e )
+			{
+				try
+				{
+					result = Long.parseLong( value );
+				}
+				catch( Exception e2 )
+				{
+					try
+					{
+						result = new BigInteger( value );
+					}
+					catch( Exception e3 )
+					{
+						throw new IOException( e3 );
+					}
+				}
+			}
+		}
 
-//	public char readHexZ()
-//		throws IOException
-//	{
-//		int result = 0;
-//		for( int i = 0; i < 4; i++ )
-//		{
-//			result <<= 4;
-//			char x = readX();
-//			if( x >= '0' && x <= '9' )
-//			{
-//				result += ( x - '0' );
-//				continue;
-//			}
-//			if( x >= 'a' && x <= 'h' )
-//			{
-//				result += ( x - 'a' + 10 );
-//				continue;
-//			}
-//			if( x >= 'A' && x <= 'H' )
-//			{
-//				result += ( x - 'A' + 10 );
-//				continue;
-//			}
-//			throw new IOException( "not a hex digit " + x );
-//		}
-//		return (char) result;
-//	}
+		return result;
+	}
+
+	public char hex()
+		throws IOException
+	{
+		int result = 0;
+		for( int i = 0; i < 4; i++ )
+		{
+			result <<= 4;
+			char x = read();
+			if( x >= '0' && x <= '9' )
+			{
+				result += ( x - '0' );
+				continue;
+			}
+			if( x >= 'a' && x <= 'h' )
+			{
+				result += ( x - 'a' + 10 );
+				continue;
+			}
+			if( x >= 'A' && x <= 'H' )
+			{
+				result += ( x - 'A' + 10 );
+				continue;
+			}
+			throw new IOException( "not a hex digit " + x );
+		}
+		return (char) result;
+	}
 
 	public void reset()
 	{
@@ -576,7 +535,7 @@ public class JSONReaderLA
 		la = true;
 	}
 
-	// tracks position
+	// tracks line and character position
 	char read()
 		throws IOException
 	{

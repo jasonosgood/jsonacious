@@ -540,7 +540,7 @@ public class JSONMaker
 //							hex += readHex() << 4;
 //							hex += readHex();
 				sb.append( (char) hex );
-//							char hex = readHexZ();
+//							char hex = hex();
 //							sb.append( (char) hex );
 				break;
 

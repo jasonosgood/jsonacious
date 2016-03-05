@@ -398,7 +398,7 @@ public class JSONDecoderReflect
 							hex += readHex();
 //							System.out.println( " = " + hex );
 //							sb.append( (char) hex );
-//							char hex = readHexZ();
+//							char hex = hex();
 							sb.append( hex );
 
 							break;
@@ -540,7 +540,7 @@ public class JSONDecoderReflect
 		throw new IOException( "not a hex digit " + (char) x );
 	}
 
-//	public char readHexZ()
+//	public char hex()
 //		throws IOException
 //	{
 //		int result = 0;
