@@ -13,12 +13,22 @@ public class DemoTanker
     public static void main( String[] args )
         throws IOException
 	{
-//        System.out.println( "'0' " + (int) '0');
-//        System.out.println( "'9' " + (int) '9');
-//        System.out.println( "'A' " + (int) 'A' );
-//        System.out.println( "'H' " + (int) 'H' );
-//        System.out.println( "'a' " + (int) 'a');
-//        System.out.println( "'h' " + (int) 'h');
+        System.out.println( "'0' " + (int) '0');
+        System.out.println( "'9' " + (int) '9');
+        System.out.println( "'A' " + (int) 'A' );
+        System.out.println( "'H' " + (int) 'H' );
+        System.out.println( "'a' " + (int) 'a');
+        System.out.println( "'h' " + (int) 'h');
+        System.out.println( "'{' " + (int) '{');
+        System.out.println( "'}' " + (int) '}');
+        System.out.println( "'[' " + (int) ']');
+        System.out.println( "']' " + (int) ']');
+        System.out.println( "'\\t' " + (int) '\t');
+        System.out.println( "'\\n' " + (int) '\n');
+        System.out.println( "'\\r' " + (int) '\r');
+        System.out.println( "' ' " + (int) ' ');
+        System.out.println( "':' " + (int) ':');
+        System.out.println( "',' " + (int) ',');
 
 		JSONReader jsonReader = new JSONReader();
 		String payload =
