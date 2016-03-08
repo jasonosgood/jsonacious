@@ -1,7 +1,16 @@
-JSONacious
-==========
+Simple, fast enough JSON utilities. Notable features, differences.
 
-JSONReader converts JSON text input into graph of maps and lists. 
+ - Strict compliance with JSON spec.
+ - Useful error messages.
+ - Hand written LA(1) parser, mostly single pass.
+ - No lazy evaluation.
+ - No JSON objects. Just Map, List, String, Number, Boolean, null.
+
+JSONReader converts JSON input into Maps and Lists.
+
+
+JSONReader is reuseable, but not threadsafe.
+
 
     import jsonacious.JSONReader;
     import java.util.Map;
@@ -17,6 +26,4 @@ Outputs this, using method HashMap.toString():
 
     {A=apple, B={}}
 
-
-JSONReader is reuseable, but not threadsafe.
 

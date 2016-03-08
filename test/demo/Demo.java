@@ -1,6 +1,6 @@
 package demo;
 
-import jsonacious.JSONReaderLA;
+import jsonacious.JSONReader;
 
 import java.io.IOException;
 import java.util.Map;
@@ -11,7 +11,7 @@ public class Demo
     public static void main( String[] args )
         throws IOException
 	{
-		JSONReaderLA jsonReader = new JSONReaderLA();
+		JSONReader jsonReader = new JSONReader();
 		String payload =
 			"{ " +
 				"\"A\" : \"apple\", \n" +

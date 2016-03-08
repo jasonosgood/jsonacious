@@ -580,7 +580,8 @@ public class JSONReader
 		marked = false;
 	}
 
-	// Split method to enable JIT
+	// Split fill() method to enable HotSpot JIT to inline methods
+	// default option is -XX:MaxInlineSize=35
 	void fill2()
 	{
 		sb.append( buf, mark + 1, nth - mark - 1 );
