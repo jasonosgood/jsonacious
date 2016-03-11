@@ -4,3 +4,18 @@ JIT trace
 
 
 Pass in class
+
+
+BUG
+
+wrong character position
+
+{ "id" : "abc", "name", "xyz" }
+
+expected
+
+Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 23)
+
+actual
+
+Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 30)
