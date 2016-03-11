@@ -1,6 +1,8 @@
 package jsonacious;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -64,6 +66,13 @@ public class JSONReader
 			default:
 				throw new ParseException( "map not found", '{', la(), line, pos );
 		}
+	}
+
+	public Map<String,Object> map( InputStream in )
+		throws IOException
+	{
+		InputStreamReader reader = new InputStreamReader( in );
+		return map( reader );
 	}
 
 	public Map<String, Object> map( Reader reader )
