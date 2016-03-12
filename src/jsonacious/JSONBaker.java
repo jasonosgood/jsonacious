@@ -666,26 +666,4 @@ public class JSONBaker
 		sb.append( buf, mark + 1, nth - mark - 1 );
 	}
 
-//	/**
-//	 * Override this method to use a different Map implementation. eg LinkedHashMap
-//	 * would preserve file order. ArrayMap would be more space efficient.
-//	 *
-//	 * @return
-//	 */
-//	public Map<String, Object> createMap()
-//	{
-//		return new LinkedHashMap<>();
-////		return new HashMap<>();
-//	}
-//
-//	/**
-//	 * Override this method to use a different List implementation. For whatever reason.
-//	 *
-//	 * @return
-//	 */
-//	public List createList()
-//	{
-//		return new ArrayList<>();
-//	}
-
 }
