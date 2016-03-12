@@ -145,7 +145,7 @@ public class JSONBaker
 
 				consume( ':' );
 
-				MapReflector reflector = MapReflector.get( map.getClass() );
+				Reflector reflector = Reflector.get( map.getClass() );
 
 				Type childClazz = reflector.getValueType( key );
 				Object value = value( childClazz );

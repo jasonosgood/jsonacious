@@ -2,15 +2,14 @@ package maker;
 
 import facebook.Location;
 import facebook.User;
-import jsonacious.MapReflector;
+import jsonacious.Reflector;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 
-public class UserReflector extends MapReflector
+public class UserReflector extends Reflector
 {
 	@Override
 	public void put( Object target, String key, Object value )

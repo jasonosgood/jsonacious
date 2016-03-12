@@ -4,16 +4,16 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapReflector {
+public class Reflector {
 
-	private final static HashMap<Class,MapReflector> _reflectors = new HashMap<>();
+	private final static HashMap<Class, Reflector> _reflectors = new HashMap<>();
 
-	private final static MapReflector _default = new MapReflector();
+	private final static Reflector _default = new Reflector();
 
 
 
-	// synchronized
-	public final static void add( Class clazz, MapReflector reflector )
+	// TODO: synchronized
+	public final static void add( Class clazz, Reflector reflector )
 	{
 		if( clazz == null )
 		{
@@ -30,15 +30,15 @@ public class MapReflector {
 		}
 	}
 
-	// synchronized
-	public final static MapReflector get( Class clazz )
+	// TODO: synchronized
+	public final static Reflector get(Class clazz )
 	{
 		if( clazz.isInstance( Map.class ))
 		{
 			return _default;
 		}
 
-		MapReflector reflector = _reflectors.get( clazz );
+		Reflector reflector = _reflectors.get( clazz );
 //		if( reflector != null )
 		{
 			return reflector;

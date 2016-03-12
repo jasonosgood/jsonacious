@@ -1,11 +1,11 @@
 package maker;
 
 import facebook.Location;
-import jsonacious.MapReflector;
+import jsonacious.Reflector;
 
 import java.lang.reflect.Type;
 
-public class LocationReflector extends MapReflector
+public class LocationReflector extends Reflector
 {
 	@Override
 	public void put( Object target, String key, Object value )
@@ -20,7 +20,6 @@ public class LocationReflector extends MapReflector
 				temp.name = value.toString();
 				break;
 		}
-
 	}
 
 	@Override
