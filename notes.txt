@@ -1,21 +1,31 @@
-JIT trace
+To enable JIT trace
 
--XX:+PrintCompilation -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining
+	-XX:+PrintCompilation -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining
 
+Should Reflector.map(...) throw exception if key (field) not found? Use Strategy?
 
-Pass in class
+Code generate POJO's JSONWriter.
 
+Utility from JSON to POJO.
+
+Use NullObjects to skip unknown fields during recursion.
+
+Throw ClassNotFoundException when JavaCompiler not found. Right?
+
+Square MemoryBased's ClassLoader with ReflectASM's, for security, chaining, etc.
+
+UnitTests for ParseExceptions.
 
 BUG
 
 wrong character position
 
-{ "id" : "abc", "name", "xyz" }
+	{ "id" : "abc", "name", "xyz" }
 
 expected
 
-Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 23)
+	Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 23)
 
 actual
 
-Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 30)
+	Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 30)

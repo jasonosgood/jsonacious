@@ -1,7 +1,7 @@
 Simple, fast enough JSON utilities. Notable features, differences.
 
  - Strict compliance with JSON spec.
- - Useful error messages.
+ - Useful error messages (line, position, expected, actual).
  - Hand written LA(1) parser, mostly single pass.
  - No lazy evaluation.
  - No JSON objects. Just Map, List, String, Number, Boolean, null.

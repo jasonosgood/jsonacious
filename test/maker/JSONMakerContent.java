@@ -1,12 +1,13 @@
 package maker;
 
-import jsonacious.JSONMaker;
+//import jsonacious.JSONMaker;
 
 import java.util.Map;
 
-public class JSONMakerContent extends JSONMaker
+public class JSONMakerContent
+//    extends JSONMaker
 {
-    @Override
+//    @Override
     public void put( Object target, String key, Object value )
     {
         Content content = (Content) target;
