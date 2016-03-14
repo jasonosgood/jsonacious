@@ -31,7 +31,7 @@ public class Reflector {
 	}
 
 	// TODO: synchronized
-	public final static Reflector get(Class clazz )
+	public final static Reflector get( Class clazz )
 	{
 		if( clazz.isInstance( Map.class ))
 		{

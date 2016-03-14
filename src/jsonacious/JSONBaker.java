@@ -139,13 +139,13 @@ public class JSONBaker
 				return map;
 			}
 
+			Reflector reflector = Reflector.get( map.getClass() );
+
 			while( true )
 			{
 				String key = string();
 
 				consume( ':' );
-
-				Reflector reflector = Reflector.get( map.getClass() );
 
 				Type childClazz = reflector.getValueType( key );
 				Object value = value( childClazz );

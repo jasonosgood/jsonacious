@@ -1,4 +1,6 @@
-package jsonacious;
+package maker;
+
+import jsonacious.MemoryBasedCompiler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -22,10 +24,11 @@ public class GeneratedDemo
         sb.append("}\n");
         Class<?> ugh = MemoryBasedCompiler.compile( "jsonacious.Generated", sb.toString() );
 		final Object instance = ugh.newInstance();
-		System.out.println( instance );
+        String abc = instance.toString();
+        System.out.println( abc );
     }
 
-    public String generate( Class pojo ) throws
+    public static String generate( Class pojo ) throws
         IOException
     {
 
@@ -35,18 +38,18 @@ public class GeneratedDemo
 //		out.println( "package baker;" );
 //		out.println();
 //		out.println();
-        out.println( "import facebook.Location;" );
+        out.println( "import facebook.Location2;" );
         out.println( "import jsonacious.Reflector;" );
         out.println();
         out.println( "import java.lang.reflect.Type;" );
         out.println();
-//		out.println( "public class LocationReflector extends Reflector" );
-        out.println( "public class HelloWorld extends Reflector" );
+		out.println( "public class Location2Reflector extends Reflector" );
+//        out.println( "public class HelloWorld extends Reflector" );
         out.println( "{" );
         out.println( "\t@Override" );
         out.println( "\tpublic void put( Object target, String key, Object value )" );
         out.println( "\t{" );
-        out.println( "\t\tLocation temp = (Location) target;" );
+        out.println( "\t\tLocation2 temp = (Location2) target;" );
         out.println( "\t\tswitch( key ) {" );
         out.println( "\t\t\tcase \"id\":" );
         out.println( "\t\t\t\ttemp.id = value.toString();" );

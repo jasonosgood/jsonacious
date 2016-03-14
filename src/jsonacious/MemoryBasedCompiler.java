@@ -26,7 +26,7 @@ import static javax.tools.JavaFileObject.Kind.SOURCE;
 
 final public class MemoryBasedCompiler
 {
-	public static Class<?> compile( String name, String source )
+	public static Class compile( String name, String source )
 		throws ClassNotFoundException
 	{
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -41,6 +41,9 @@ final public class MemoryBasedCompiler
 
 		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
+		// TODO add debugging info
+//		List<String> options = Arrays.asList( "-g" );
+
 		URI uri = toURI( name, SOURCE );
 		SimpleJavaFileObject sjfo = new SimpleJavaFileObject( uri, SOURCE )
 		{
@@ -53,6 +56,7 @@ final public class MemoryBasedCompiler
 		List<JavaFileObject> files = Arrays.asList( sjfo );
 
 		JavaCompiler.CompilationTask task = compiler.getTask( null, fileManager, diagnostics, null, null, files );
+//		JavaCompiler.CompilationTask task = compiler.getTask( null, fileManager, diagnostics, options, null, files );
 
 		if( task.call() )
 		{
