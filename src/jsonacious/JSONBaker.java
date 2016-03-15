@@ -139,7 +139,8 @@ public class JSONBaker
 				return map;
 			}
 
-			Reflector reflector = Reflector.get( map.getClass() );
+			Reflector reflector = Reflector.get( parentClazz );
+//			Reflector reflector = Reflector.get( map.getClass() );
 
 			while( true )
 			{
