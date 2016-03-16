@@ -5,7 +5,6 @@ import facebook.User;
 import jsonacious.Reflector;
 
 import java.io.FileWriter;
-import java.lang.reflect.Type;
 
 public class GeneratedDemo
 {

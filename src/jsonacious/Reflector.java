@@ -58,7 +58,7 @@ public class Reflector {
 				Reflector.add( clazz, reflector );
 				return reflector;
 			}
-			catch( Exception e )
+			catch( ClassNotFoundException | InstantiationException | IllegalAccessException e )
 			{
 				e.printStackTrace();
 			}
@@ -67,7 +67,6 @@ public class Reflector {
 	}
 
 	public static String generate( Class pojo )
-		throws IOException
 	{
 		String pkg = pojo.getPackage().getName();
 		String className = pojo.getName();
@@ -86,74 +85,85 @@ public class Reflector {
 			reduced.add( f );
 		}
 
-		StringWriter writer = new StringWriter();
-		PrintWriter out = new PrintWriter( writer );
+		StringBuilder sb = new StringBuilder();
 
-		out.printf( "package %s;\n", pkg );
-		out.printf( "import jsonacious.Reflector;\n" );
-		out.printf( "import java.lang.reflect.Type;\n" );
-		out.println();
+		print( sb, "package %s;", pkg );
+		print( sb, "import jsonacious.Reflector;" );
+		print( sb, "import java.lang.reflect.Type;" );
+		print( sb );
 
 		// field assignments
-		out.printf( "public class %sReflector extends Reflector {\n", simpleClassName );
-		out.printf( "  public void put( Object target, String key, Object value ) {\n" );
-		out.printf( "    %s temp = (%s) target;\n", className, className );
-		out.printf( "    switch( key ) {\n" );
+		print( sb, "public class %sReflector extends Reflector {", simpleClassName );
+		print( sb, "  public void put( Object target, String key, Object value ) {" );
+		print( sb, "    %s temp = (%s) target;", className, className );
+		print( sb, "    switch( key ) {" );
 
 		for( Field f : reduced )
 		{
 			String name = f.getName();
 			Type type = f.getGenericType();
 
-			out.printf( "      case %s:\n", quoted( name ));
+			print( sb, "      case %s:", quoted( name ));
 			// temp.xyz = (java.lang.Object) value;
-			out.printf( "        temp.%s = (%s) value;\n", name, type.getTypeName() );
-			out.printf( "        break;\n" );
+			print( sb, "        temp.%s = (%s) value;", name, type.getTypeName() );
+			print( sb, "        break;" );
 		}
 
-		out.printf( "    }\n" );
-		out.printf( "  }\n" );
-		out.println();
+		print( sb, "    }" );
+		print( sb, "  }" );
+		print( sb );
 
 		// static variables
 		for( Field f : reduced )
 		{
 			String name = f.getName();
 			//   static Type xyzType;
-			out.printf( "  static Type %sType;\n", name );
+			print( sb, "  static Type %sType;", name );
 		}
-		out.println();
+		print( sb );
 
 		// static initializers
-		out.printf( "  static {\n" );
-		out.printf( "    try {\n" );
+		print( sb, "  static {" );
+		print( sb, "    try {" );
 		for( Field f : reduced )
 		{
 			String name = f.getName();
 			//   xyzType = Class.class.getField( "xyz" ).getGenericType();
-			out.printf( "      %sType = %s.class.getField( %s ).getGenericType();\n", name, className, quoted( name ) );
+			print( sb, "      %sType = %s.class.getField( %s ).getGenericType();", name, className, quoted( name ) );
 		}
-		out.printf( "    } catch( NoSuchFieldException e ) {}\n" );
-		out.printf( "  }\n" );
+		print( sb, "    } catch( NoSuchFieldException e ) {}" );
+		print( sb, "  }" );
 
 		// field types
-		out.printf( "  public Type getValueType( String key ) {\n" );
-		out.printf( "    switch( key ) {\n" );
+		print( sb, "  public Type getValueType( String key ) {" );
+		print( sb, "    switch( key ) {" );
 
 		for( Field f : reduced )
 		{
 			String name = f.getName();
 			// case "xyz": return xyzType;
-			out.printf( "      case %s: return %sType;\n", quoted( name ), name );
+			print( sb, "      case %s: return %sType;", quoted( name ), name );
 		}
 
-		out.printf( "    }\n" );
-		out.printf( "    return Object.class;\n" );
-		out.printf( "  }\n" );
-		out.printf( "}\n" );
-		out.close();
+		print( sb, "    }" );
+		print( sb, "    return Object.class;" );
+		print( sb, "  }" );
+		print( sb, "}" );
+		print( sb );
 
-		return writer.toString();
+		return sb.toString();
+	}
+
+	public static void print( StringBuilder sb, String format, String... args )
+	{
+		String formatted = String.format( format, args );
+		sb.append( formatted );
+		sb.append( '\n' );
+	}
+
+	public static void print( StringBuilder sb )
+	{
+		sb.append( '\n' );
 	}
 
 	public static String quoted( String value )
