@@ -51,13 +51,12 @@ public class Reflector {
 		{
 			try
 			{
-				String name = "maker." + clazz.getSimpleName() + "Reflector";
+				String name = clazz.getName() + "Reflector";
 				String source = generate( clazz );
 				Class reflectorClazz = MemoryBasedCompiler.compile( name, source );
 				reflector = (Reflector) reflectorClazz.newInstance();
 				Reflector.add( clazz, reflector );
 				return reflector;
-
 			}
 			catch( Exception e )
 			{
@@ -70,7 +69,7 @@ public class Reflector {
 	public static String generate( Class pojo )
 		throws IOException
 	{
-		String pkg = "maker";
+		String pkg = pojo.getPackage().getName();
 		String className = pojo.getName();
 		String simpleClassName = pojo.getSimpleName();
 
@@ -94,41 +93,58 @@ public class Reflector {
 		out.printf( "import jsonacious.Reflector;\n" );
 		out.printf( "import java.lang.reflect.Type;\n" );
 		out.println();
+
+		// field assignments
 		out.printf( "public class %sReflector extends Reflector {\n", simpleClassName );
 		out.printf( "  public void put( Object target, String key, Object value ) {\n" );
 		out.printf( "    %s temp = (%s) target;\n", className, className );
 		out.printf( "    switch( key ) {\n" );
 
-		// Generates cases in this form:
-		//
-		//		case "id":
-		//		temp.id = value.toString();
-		//		break;
-
 		for( Field f : reduced )
 		{
 			String name = f.getName();
+			Type type = f.getGenericType();
+
 			out.printf( "      case %s:\n", quoted( name ));
-			out.printf( "        temp.%s = value.toString();\n", name );
+			// temp.xyz = (java.lang.Object) value;
+			out.printf( "        temp.%s = (%s) value;\n", name, type.getTypeName() );
 			out.printf( "        break;\n" );
 		}
 
 		out.printf( "    }\n" );
 		out.printf( "  }\n" );
+		out.println();
+
+		// static variables
+		for( Field f : reduced )
+		{
+			String name = f.getName();
+			//   static Type xyzType;
+			out.printf( "  static Type %sType;\n", name );
+		}
+		out.println();
+
+		// static initializers
+		out.printf( "  static {\n" );
+		out.printf( "    try {\n" );
+		for( Field f : reduced )
+		{
+			String name = f.getName();
+			//   xyzType = Class.class.getField( "xyz" ).getGenericType();
+			out.printf( "      %sType = %s.class.getField( %s ).getGenericType();\n", name, className, quoted( name ) );
+		}
+		out.printf( "    } catch( NoSuchFieldException e ) {}\n" );
+		out.printf( "  }\n" );
+
+		// field types
 		out.printf( "  public Type getValueType( String key ) {\n" );
 		out.printf( "    switch( key ) {\n" );
-
-		// Generates cases in this form:
-		//
-		//		case "id":
-		//		return java.lang.String.class;
 
 		for( Field f : reduced )
 		{
 			String name = f.getName();
-			Type type = f.getGenericType();
-			out.printf( "      case %s:\n", quoted( name ));
-			out.printf( "        return %s.class;\n", type.getTypeName() );
+			// case "xyz": return xyzType;
+			out.printf( "      case %s: return %sType;\n", quoted( name ), name );
 		}
 
 		out.printf( "    }\n" );

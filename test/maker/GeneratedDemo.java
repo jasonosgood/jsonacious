@@ -1,9 +1,11 @@
 package maker;
 
 import facebook.Location;
+import facebook.User;
 import jsonacious.Reflector;
 
 import java.io.FileWriter;
+import java.lang.reflect.Type;
 
 public class GeneratedDemo
 {
@@ -11,8 +13,10 @@ public class GeneratedDemo
     public static void main(final String[] args)
 		throws Exception
     {
-        String s = Reflector.generate( Location.class );
-		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/maker/LocationReflector.java" );
+//        String s = Reflector.generate( Location.class );
+//		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/maker/LocationReflector.java" );
+        String s = Reflector.generate( User.class );
+		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/facebook/UserReflector.java" );
 		writer.write( s );
 		writer.close();
 

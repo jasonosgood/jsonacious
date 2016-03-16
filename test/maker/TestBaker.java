@@ -12,7 +12,7 @@ public class TestBaker {
 	public final static void main( String[] args )
 		throws Exception
 	{
-		String content = "{ 'id' : 'abc', 'name': 'xyz', 'location' : { 'id' : 'tops' } }".replace( '\'', '"' );
+		String content = "{ 'id' : 'abc', 'name': 'xyz', 'location' : { 'id' : 'tops' }, 'alias' : [ 'one', 'two' ] }".replace( '\'', '"' );
 //		String content = "{ 'id' : 'tops' }".replace( '\'', '"' );
 //		String content = "{ 'id' : 'abc', 'location' : { 'id' : 'tops' } }".replace( '\'', '"' );
 //		String content = "{ 'alias' : [ 'one', 'two' ] }".replace( '\'', '"' );
