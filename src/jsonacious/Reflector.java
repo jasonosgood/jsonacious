@@ -88,10 +88,17 @@ public class Reflector {
 
 			{
 				// Only support instantiable classes, no interfaces, abstracts
-				int mod = f.getType().getModifiers();
-				if( Modifier.isInterface( mod )) continue;
-				// TOOD why is bool.class considered abstract?
-//				if( Modifier.isAbstract( mod )) continue;
+				Class<?> type = f.getType();
+
+				// Special case primitive classes (eg int.class) because they are "abstract final"
+				//
+				// http://stackoverflow.com/questions/13180600/why-are-java-primitive-types-modifiers-public-abstract-final
+				if( !type.isPrimitive() )
+				{
+					int mod = type.getModifiers();
+					if( Modifier.isInterface( mod )) continue;
+					if( Modifier.isAbstract( mod )) continue;
+				}
 			}
 
 			reduced.add( f );
