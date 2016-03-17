@@ -14,8 +14,10 @@ public class GeneratedDemo
     {
 //        String s = Reflector.generate( Location.class );
 //		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/maker/LocationReflector.java" );
-        String s = Reflector.generate( User.class );
-		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/facebook/UserReflector.java" );
+//        String s = Reflector.generate( User.class );
+//		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/facebook/UserReflector.java" );
+        String s = Reflector.generate( variety.Variety.class );
+		FileWriter writer = new FileWriter( "/Users/jasonosgood/Projects/jsonacious/test/variety/VarietyReflector.java" );
 		writer.write( s );
 		writer.close();
 

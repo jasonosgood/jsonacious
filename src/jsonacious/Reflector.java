@@ -37,7 +37,7 @@ public class Reflector {
 	// TODO: synchronized
 	public final static Reflector get( Class clazz )
 	{
-		if( clazz.isInstance( Map.class ))
+		if( Map.class.isAssignableFrom( clazz ))
 		{
 			return _default;
 		}
@@ -131,7 +131,7 @@ public class Reflector {
 			//   xyzType = Class.class.getField( "xyz" ).getGenericType();
 			print( sb, "      %sType = %s.class.getField( %s ).getGenericType();", name, className, quoted( name ) );
 		}
-		print( sb, "    } catch( NoSuchFieldException e ) {}" );
+		print( sb, "    } catch( NoSuchFieldException e ) { e.printStackTrace(); }" );
 		print( sb, "  }" );
 
 		// field types

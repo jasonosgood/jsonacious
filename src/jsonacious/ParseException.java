@@ -11,7 +11,7 @@ public class ParseException extends IOException {
     int line;
     int pos;
 
-    public ParseException( Exception cause, int line, int pos )
+    public ParseException( Throwable cause, int line, int pos )
     {
         super( cause );
         this.line = line;

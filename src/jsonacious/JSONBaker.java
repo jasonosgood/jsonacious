@@ -41,13 +41,13 @@ public class JSONBaker
 //	/**
 //	 * Returns either Map or List.
 //	 */
-//	public Object parse( Reader reader )
-//		throws IOException
-//	{
-//		reset();
-//		this.reader = reader;
-//		return root();
-//	}
+	public <T> T parse( Reader reader, Class<T> clazz )
+		throws IOException
+	{
+		reset();
+		this.reader = reader;
+		return root( clazz );
+	}
 
 	public <T> T parse( String content, Class<T> clazz )
 		throws IOException
@@ -299,8 +299,28 @@ public class JSONBaker
 			case '{':
 			{
 				// TODO Sanity check
-				Class<?> clazz = (Class<?>) type;
-				return map( clazz );
+				try
+				{
+					Class<?> clazz;
+					if( type instanceof ParameterizedType )
+					{
+						ParameterizedType p = (ParameterizedType) type;
+						Type raw = p.getRawType();
+//						Type owner = p.getOwnerType();
+						System.out.println( raw );
+//						System.out.println( owner );
+						clazz = (Class<?>) raw;
+					}
+					else
+					{
+						clazz = (Class<?>) type;
+					}
+					return map( clazz );
+				}
+				catch( ClassCastException e )
+				{
+					throw new ParseException( e, line, pos );
+				}
 			}
 
 			case '-':

@@ -15,7 +15,7 @@ public class Demo
 		String payload =
 			"{ " +
 				"\"A\" : \"apple\", \n" +
-//				"\"B\" : \"banana \\t \\r \\n \\\\ \", \n" +
+				"\"B\" : \"banana \\t \\r \\n \\\\ \", \n" +
 				"\"C\" : \"code\", \n" +
 				"\"D\" : {}, \n" +
 				"\"E\" : { \"Z1\" : \"zebra\" }, \n" +
