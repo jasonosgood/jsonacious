@@ -4,6 +4,8 @@ To enable JIT trace
 
 Should Reflector.map(...) throw exception if key (field) not found? Use Strategy?
 
+TODO
+
 Code generate POJO's JSONWriter.
 
 Utility from JSON to POJO.
@@ -16,16 +18,6 @@ Square MemoryBased's ClassLoader with ReflectASM's, for security, chaining, etc.
 
 UnitTests for ParseExceptions.
 
-BUG
+Do something about Date.
+Do something about Enum.
 
-wrong character position
-
-	{ "id" : "abc", "name", "xyz" }
-
-expected
-
-	Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 23)
-
-actual
-
-	Exception in thread "main" jsonacious.ParseException: expected ':', found ',' (line: 1 pos: 30)
