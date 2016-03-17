@@ -14,7 +14,7 @@ public class TestVariety
 		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/test/variety/variety.json" );
 
 		JSONBaker baker = new JSONBaker();
-//		VarietyReflector2 reflector = new VarietyReflector2();
+//		VarietyReflector3 reflector = new VarietyReflector3();
 //		Reflector.add( Variety.class, reflector );
 		Variety variety = baker.parse( reader, Variety.class );
 		System.out.println( "variety " + variety );

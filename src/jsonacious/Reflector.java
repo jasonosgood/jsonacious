@@ -132,17 +132,17 @@ public class Reflector {
 		print( sb, "  }" );
 		print( sb );
 
-		// static variables
+		// type variables
 		for( Field f : reduced )
 		{
 			String name = f.getName();
-			//   static Type xyzType;
-			print( sb, "  static Type %sType;", name );
+			//	Type xyzType;
+			print( sb, "  Type %sType;", name );
 		}
 		print( sb );
 
-		// static initializers
-		print( sb, "  static {" );
+		// Constructor, initialize type variables
+		print( sb, "  public %sReflector() {", simpleClassName );
 		print( sb, "    try {" );
 		for( Field f : reduced )
 		{
