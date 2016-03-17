@@ -1,5 +1,6 @@
 package variety;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,8 @@ public class Variety
 //	public Boolean bool4;
 	public HashMap<String,String> map1;
 	public HashMap<String,String> map2;
+	public Map<String,String> map3;
+	public AbstractMap<String,String> map4;
 	public ArrayList<String> list1;
 	public ArrayList<String> list2;
 	public ArrayList<HashMap> listOfMap;

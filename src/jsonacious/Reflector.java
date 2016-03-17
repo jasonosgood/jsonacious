@@ -77,11 +77,23 @@ public class Reflector {
 		ArrayList<Field> reduced = new ArrayList<>();
 		for( Field f : fields )
 		{
-			int mod = f.getModifiers();
-			if( Modifier.isFinal( mod )) continue;
-			if( Modifier.isStatic( mod )) continue;
-			if( Modifier.isTransient( mod )) continue;
-			if( Modifier.isVolatile( mod )) continue;
+			{
+				// Only support public fields; no static, final, transient, volatile
+				int mod = f.getModifiers();
+				if( Modifier.isFinal( mod )) continue;
+				if( Modifier.isStatic( mod )) continue;
+				if( Modifier.isTransient( mod )) continue;
+				if( Modifier.isVolatile( mod )) continue;
+			}
+
+			{
+				// Only support instantiable classes, no interfaces, abstracts
+				int mod = f.getType().getModifiers();
+				if( Modifier.isInterface( mod )) continue;
+				// TOOD why is bool.class considered abstract?
+//				if( Modifier.isAbstract( mod )) continue;
+			}
+
 			reduced.add( f );
 		}
 

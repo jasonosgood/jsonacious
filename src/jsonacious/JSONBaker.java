@@ -140,7 +140,6 @@ public class JSONBaker
 			}
 
 			Reflector reflector = Reflector.get( parentClazz );
-//			Reflector reflector = Reflector.get( map.getClass() );
 
 			while( true )
 			{
@@ -306,9 +305,6 @@ public class JSONBaker
 					{
 						ParameterizedType p = (ParameterizedType) type;
 						Type raw = p.getRawType();
-//						Type owner = p.getOwnerType();
-						System.out.println( raw );
-//						System.out.println( owner );
 						clazz = (Class<?>) raw;
 					}
 					else
