@@ -14,8 +14,8 @@ public class Variety
 	public Object null1;
 	public boolean bool1;
 	public boolean bool2;
-//	public Boolean bool3;
-//	public Boolean bool4;
+	public Boolean bool3;
+	public Boolean bool4;
 	public HashMap<String,String> map1;
 	public HashMap<String,String> map2;
 	public Map<String,String> map3;
