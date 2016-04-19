@@ -1,6 +1,8 @@
 package jsonacious;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -25,28 +27,20 @@ public class JSONBaker
 	char last = 0;
 	boolean marked = false;
 
-//	/**
-//	 * Returns either Map or List.
-//	 */
-//	public Object parse( String content )
-//		throws IOException
-//	{
-//		reset();
-//		// Fully "read" String into buffer
-//		buf = content.toCharArray();
-//		limit = buf.length;
-//		return root();
-//	}
-//
-//	/**
-//	 * Returns either Map or List.
-//	 */
+
+	public <T> T parse( InputStream in, Class<T> clazz )
+		throws IOException
+	{
+		InputStreamReader reader = new InputStreamReader( in );
+		return parse( reader, clazz );
+	}
+
 	public <T> T parse( Reader reader, Class<T> clazz )
 		throws IOException
 	{
 		reset();
 		this.reader = reader;
-		return root( clazz );
+		return parse( clazz );
 	}
 
 	public <T> T parse( String content, Class<T> clazz )
@@ -56,11 +50,11 @@ public class JSONBaker
 		// Fully "read" String into buffer
 		buf = content.toCharArray();
 		limit = buf.length;
-		return root( clazz );
+		return parse( clazz );
 	}
 
 
-	<T> T root( Class<T> clazz )
+	<T> T parse( Class<T> clazz )
 		throws IOException
 	{
 		switch( la() )
@@ -79,46 +73,6 @@ public class JSONBaker
 				throw new ParseException( "map not found", '{', la(), line, pos );
 		}
 	}
-
-//	public Map<String, Object> map( Reader reader )
-//		throws IOException
-//	{
-//		reset();
-//		this.reader = reader;
-//
-//		switch( la() )
-//		{
-//			case '{':
-//				return map();
-//
-//			case EOF:
-//				throw new ParseException( "EOF, expected '{'", line, pos );
-//
-//			default:
-//				throw new ParseException( "map not found", '{', la(), line, pos );
-//		}
-//	}
-//
-//	public Map<String, Object> map( String content )
-//		throws IOException
-//	{
-//		reset();
-//		// Fully "read" String into buffer
-//		buf = content.toCharArray();
-//		limit = buf.length;
-//
-//		switch( la() )
-//		{
-//			case '{':
-//				return map();
-//
-//			case EOF:
-//				throw new ParseException( "EOF, expected '{'", line, pos );
-//
-//			default:
-//				throw new ParseException( "map not found", '{', la(), line, pos );
-//		}
-//	}
 
 	<T> T map( Class<T> parentClazz )
 		throws IOException
@@ -597,8 +551,8 @@ public class JSONBaker
 	{
 		while( true )
 		{
-			char c = read();
-			switch( c )
+			current = read();
+			switch( current )
 			{
 				// whitespace
 				case '\n':
@@ -609,9 +563,7 @@ public class JSONBaker
 
 				// content
 				default:
-					current = c;
-					pos++;
-					return c;
+					return current;
 			}
 		}
 	}

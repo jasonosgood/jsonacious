@@ -509,8 +509,8 @@ public class JSONReader
 	{
 		while( true )
 		{
-			char c = read();
-			switch( c )
+			current = read();
+			switch( current )
 			{
 				// whitespace
 				case '\n':
@@ -521,9 +521,7 @@ public class JSONReader
 
 				// content
 				default:
-					current = c;
-					pos++;
-					return c;
+					return current;
 			}
 		}
 	}

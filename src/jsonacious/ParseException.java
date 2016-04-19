@@ -5,11 +5,11 @@ import java.io.IOException;
 import static java.lang.String.format;
 
 public class ParseException extends IOException {
-    String blurb;
-    char expected;
-    char found;
-    int line;
-    int pos;
+    public String blurb;
+	public char expected;
+	public char found;
+    public int line;
+	public int pos;
 
     public ParseException( Throwable cause, int line, int pos )
     {

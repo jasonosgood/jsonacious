@@ -12,15 +12,16 @@ public class TestBaker {
 	public final static void main( String[] args )
 		throws Exception
 	{
-		String content = "{ 'id' : 'abc', 'name': 'xyz', 'location' : { 'id' : 'tops' }, 'alias' : [ 'one', 'two' ] }".replace( '\'', '"' );
+		String content = "{ 'id' : 'abc' }".replace( '\'', '"' );
+//		String content = "{ 'id' , 'abc', 'name': 'xyz', 'location' : { 'id' : 'tops' }, 'alias' : [ 'one', 'two' ] }".replace( '\'', '"' );
 //		String content = "{ 'id' : 'tops' }".replace( '\'', '"' );
 //		String content = "{ 'id' : 'abc', 'location' : { 'id' : 'tops' } }".replace( '\'', '"' );
 //		String content = "{ 'alias' : [ 'one', 'two' ] }".replace( '\'', '"' );
 //		String content = "{ 'id' : 'abc' }".replace( '\'', '"' );
 //		String content = "{ 'id' : 'abc', 'name': 'xyz' }".replace( '\'', '"' );
 		JSONReader parser = new JSONReader();
-		Map map = parser.map( content );
-		System.out.println( map.toString() );
+//		Map map = parser.map( content );
+//		System.out.println( map.toString() );
 
 
 		JSONBaker baker = new JSONBaker();
