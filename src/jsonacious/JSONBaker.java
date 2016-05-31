@@ -1,5 +1,8 @@
 package jsonacious;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,6 +31,18 @@ public class JSONBaker
 	boolean marked = false;
 
 
+	public <T> T parse( File file, Class<T> clazz )
+		throws IOException
+	{
+		if( !file.exists() )
+		{
+			throw new FileNotFoundException( file.getCanonicalPath() );
+		}
+
+		Reader reader = new FileReader( file );
+		return parse( reader, clazz );
+	}
+
 	public <T> T parse( InputStream in, Class<T> clazz )
 		throws IOException
 	{
@@ -54,17 +69,23 @@ public class JSONBaker
 	}
 
 
+	Class<? extends Map> defaultMapClazz = HashMap.class;
+	Class<? extends List> defaultListClazz = ArrayList.class;
+
 	<T> T parse( Class<T> clazz )
 		throws IOException
 	{
 		switch( la() )
 		{
 			case '[':
-//				return list( clazz );
-			return null;
-
+			{
+////				return list( null );
+			}
 			case '{':
+			{
+				// TODO Sanity clazz isa Map
 				return map( clazz );
+			}
 
 			case EOF:
 				throw new ParseException( "EOF, expected '{' or '['", line, pos );
@@ -79,13 +100,15 @@ public class JSONBaker
 	{
 		consume();
 
-		try {
+		try
+		{
+			Reflector reflector = Reflector.get( parentClazz );
+
 			// TODO: Verify is concrete class
 //			parentClazz.isInterface();
 //			parentClazz.isArray();
 
 			T map = parentClazz.newInstance();
-
 
 			if( la() == '}' )
 			{
@@ -93,7 +116,6 @@ public class JSONBaker
 				return map;
 			}
 
-			Reflector reflector = Reflector.get( parentClazz );
 
 			while( true )
 			{
@@ -131,58 +153,38 @@ public class JSONBaker
 		}
 	}
 
-//	public List<Object> list( Reader reader )
-//		throws IOException
-//	{
-//		reset();
-//		this.reader = reader;
-//
-//		switch( la() )
-//		{
-//			case '[':
-//				return list();
-//
-//			case EOF:
-//				throw new ParseException( "EOF, expected '['", line, pos );
-//
-//			default:
-//				throw new ParseException( "list not found", '[', la(), line, pos );
-//		}
-//	}
-
 	List list( ParameterizedType type )
 		throws IOException
 	{
 		consume();
 
-		Type raw  = type.getRawType();
 		Class<?> clazz = null;
 
 		try
 		{
-			if( !( raw instanceof Class ))
-			{
-				throw new InstantiationException( "not a class: " + clazz );
-			}
 
-			clazz = (Class<?>) raw;
+			if( type == null )
+			{
+				clazz = defaultListClazz;
+			}
+			else
+			{
+				Type raw  = type.getRawType();
+				clazz = (Class<?>) raw;
+			}
 
 			if( !( List.class.isAssignableFrom( clazz )))
 			{
 				throw new InstantiationException( "not a subclass of List: " + clazz );
 			}
 
-			List list;
-
 			if( clazz.isInterface() )
 			{
-				list = new ArrayList();
-			}
-			else
-			{
-				list = (List) clazz.newInstance();
+				// TODO This will break (later assignment) if default is not a subclass of clazz
+				clazz = defaultListClazz;
 			}
 
+			List list = (List) clazz.newInstance();
 
 			if( la() == ']' )
 			{
@@ -192,10 +194,14 @@ public class JSONBaker
 				return list;
 			}
 
+			Type childType = null;
+			if( type != null )
+			{
+				childType = type.getActualTypeArguments()[0];
+			}
+
 			while( true )
 			{
-				Type childType = type.getActualTypeArguments()[0];
-
 				Object value = value( childType );
 
 				add( list, value );
@@ -241,12 +247,7 @@ public class JSONBaker
 
 			case '[':
 			{
-				// TODO Move this test to list(...)
-				if( type instanceof ParameterizedType )
-				{
-					return list( (ParameterizedType) type );
-				}
-				return null;
+				return list( (ParameterizedType) type );
 			}
 
 			case '{':
@@ -255,7 +256,11 @@ public class JSONBaker
 				try
 				{
 					Class<?> clazz;
-					if( type instanceof ParameterizedType )
+					if( type == null )
+					{
+						clazz = defaultMapClazz;
+					}
+					else if( type instanceof ParameterizedType )
 					{
 						ParameterizedType p = (ParameterizedType) type;
 						Type raw = p.getRawType();
@@ -265,6 +270,7 @@ public class JSONBaker
 					{
 						clazz = (Class<?>) type;
 					}
+
 					return map( clazz );
 				}
 				catch( ClassCastException e )
@@ -629,7 +635,8 @@ public class JSONBaker
 		marked = false;
 	}
 
-	// Split method to enable JIT
+	// Split fill() method to enable HotSpot JIT to inline methods
+	// default option is -XX:MaxInlineSize=35
 	void fill2()
 	{
 		sb.append( buf, mark + 1, nth - mark - 1 );

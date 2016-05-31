@@ -21,7 +21,8 @@ import static javax.tools.JavaFileObject.Kind.SOURCE;
  * <p>
  * http://stackoverflow.com/q/12173294/1371250
  * <p>
- * Uses javax.tools.JavaCompiler. Meaning jsonacious requires tools.jar from JDK.
+ * Uses javax.tools.JavaCompiler. Meaning jsonacious requires tools.jar from JDK
+ * at runtime for code generation to work.
  */
 
 final public class MemoryBasedCompiler

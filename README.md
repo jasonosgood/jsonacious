@@ -3,19 +3,20 @@ JSON reader and writer for Java.
 Notable features, differences.
 
  - Strict compliance with JSON spec.
- - Correct, useful error messages.
- - Supports instantiable Maps, Lists, and POJOs.
- - Uses public fields, not accessors (no JavaBeans).
+ - Correct, useful parse error messages.
+ - Supports Maps, Lists, and POJOs.
+ - No JavaBeans or accessors, only supports public fields.
  - No annotations.
  - Fast enough LA(1) style parser.
  - Small library (~40kb)
- - Requires JDK's JavaCompiler (tools.jar)
+ - Requires JDK's JavaCompiler (tools.jar) at runtime
  - Code generate POJO from JSON.
 
 **Reader**
 
-JSONReader deserializes JSON data to Java objects. Pass in the class 
-you'd like to receive back, either Map, List, or POJO. 
+JSONReader deserializes JSON data to Java objects. Pass in the Class 
+to isntantiate. Must be a concrete subclass of either Map or List, or 
+your own POJO. 
 
     import jsonacious.JSONReader;
     import java.util.Map;
@@ -37,10 +38,13 @@ JSONReader instances are reuseable, but are not thread-safe.
 
 JSONWriter serializes Maps, Lists, POJOs to JSON data.
 
+JSONWriter instances are reuseable, but are not thread-safe.
+
+
 **The Rules**
 
-JSONacious supports public fields with instantiable or primitive classes.
-Field names and JSON keys must match exactly.
+JSONacious supports public fields with instantiable or primitive (scalar)
+classes. Field names and JSON keys must match exactly; there is no mapping.
 
     class ExamplePOJO 
     {
@@ -67,7 +71,7 @@ handling for Dates might happen.
 
 **Generator**
 
-POJOtastic uses example JSON data to code generate a Java class. JSON 
+POJOnacious converts example JSON data to Java class source code. JSON 
 keys become Java fields, JSON values become Java default field values.
 
 **Reflector**
@@ -83,5 +87,8 @@ source code, add it to your project, tweak as needed.
 
  - Maven (blech)
  - Support enums.
+ - Support arrays (maybe).
  - Support Dates (maybe).
- - Figure out how to debug Reflectors.
+ - Figure out how to debug runtime generated Reflectors.
+ - Command line utility to generate POJOs from example JSON.
+ - Command line utility to generate Reflectors (eg during build).

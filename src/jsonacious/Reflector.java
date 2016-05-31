@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Reflector {
+public class Reflector
+{
 
 	private final static HashMap<Class, Reflector> _reflectors = new HashMap<>();
 
@@ -192,7 +193,7 @@ public class Reflector {
 
 	public Type getValueType( String key )
 	{
-		return Object.class;
+		return null;
 	}
 
 	public void put( Object target, String key, Object value )
