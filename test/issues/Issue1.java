@@ -1,7 +1,7 @@
 package issues;
 
 
-import jsonacious.JSONBaker;
+import jsonacious.JSONReader;
 import jsonacious.ParseException;
 
 import java.util.HashMap;
@@ -21,7 +21,7 @@ public class Issue1
 	{
 		String json = "{ 'a' : '123', 'b' , '456' }".replace( '\'', '"' );
 
-		JSONBaker reader = new JSONBaker();
+		JSONReader reader = new JSONReader();
 
 		try
 		{

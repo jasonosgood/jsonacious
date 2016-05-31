@@ -1,6 +1,6 @@
 package variety;
 
-import jsonacious.JSONBaker;
+import jsonacious.JSONReader;
 import jsonacious.Reflector;
 
 import java.io.FileReader;
@@ -13,7 +13,7 @@ public class TestVariety
 	{
 		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/test/variety/variety.json" );
 
-		JSONBaker baker = new JSONBaker();
+		JSONReader baker = new JSONReader();
 		VarietyReflector reflector = new VarietyReflector();
 		Reflector.add( Variety.class, reflector );
 		Variety variety = baker.parse( reader, Variety.class );

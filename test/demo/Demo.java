@@ -1,6 +1,6 @@
 package demo;
 
-import jsonacious.JSONBaker;
+import jsonacious.JSONReader;
 
 import java.io.File;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ public class Demo
 		File file = new File( "./test/variety/variety.json" );
 		System.out.println( file.getCanonicalFile() );
 
-		JSONBaker jsonReader = new JSONBaker();
+		JSONReader jsonReader = new JSONReader();
 		Map map = jsonReader.parse( file, HashMap.class );
 		System.out.println( map );
 	}

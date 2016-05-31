@@ -1,12 +1,8 @@
 package demo;
 
-import jsonacious.JSONBaker;
+import jsonacious.JSONReader;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ListDemo
 {
@@ -16,7 +12,7 @@ public class ListDemo
 		File file = new File( "./test/demo/ListList.json" );
 		System.out.println( file.getCanonicalFile() );
 
-		JSONBaker jsonReader = new JSONBaker();
+		JSONReader jsonReader = new JSONReader();
 //		List map = jsonReader.parse( file, ArrayList.class );
 //		System.out.println( map );
 	}
