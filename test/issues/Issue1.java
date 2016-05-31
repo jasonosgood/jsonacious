@@ -1,9 +1,10 @@
 package issues;
 
 
-import jsonacious.JSONReader;
+import jsonacious.JSONBaker;
 import jsonacious.ParseException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -20,11 +21,11 @@ public class Issue1
 	{
 		String json = "{ 'a' : '123', 'b' , '456' }".replace( '\'', '"' );
 
-		JSONReader parser = new JSONReader();
+		JSONBaker reader = new JSONBaker();
 
 		try
 		{
-			Map map = parser.map( json );
+			Map map = reader.parse( json, HashMap.class );
 			System.out.println( map );
 		}
 		catch( ParseException e )

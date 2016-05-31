@@ -1,12 +1,9 @@
 package maker;
 
-import facebook.Location;
 import facebook.User;
-import jsonacious.JSONReader;
 import jsonacious.JSONBaker;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class TestBaker {
 
