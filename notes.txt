@@ -7,6 +7,7 @@ Should Reflector.map(...) throw exception if key (field) not found? Use Strategy
 TODO
 
 Code generate POJO's JSONWriter.
+Exhaustive logging.
 
 Utility from JSON to POJO.
 

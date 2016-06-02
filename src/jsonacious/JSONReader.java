@@ -75,11 +75,14 @@ public class JSONReader
 	<T> T parse( Class<T> clazz )
 		throws IOException
 	{
+
 		switch( la() )
 		{
 			case '[':
 			{
-////				return list( null );
+				// TODO pass in provided List subclass (fix this mess)
+				// TODO Sanity clazz isa List
+				return (T) list( null );
 			}
 			case '{':
 			{
@@ -158,33 +161,33 @@ public class JSONReader
 	{
 		consume();
 
-		Class<?> clazz = null;
+		Class<?> listClazz = null;
 
 		try
 		{
 
 			if( type == null )
 			{
-				clazz = defaultListClazz;
+				listClazz = defaultListClazz;
 			}
 			else
 			{
 				Type raw  = type.getRawType();
-				clazz = (Class<?>) raw;
+				listClazz = (Class<?>) raw;
 			}
 
-			if( !( List.class.isAssignableFrom( clazz )))
+			if( !( List.class.isAssignableFrom( listClazz )))
 			{
-				throw new InstantiationException( "not a subclass of List: " + clazz );
+				throw new InstantiationException( "not a subclass of List: " + listClazz );
 			}
 
-			if( clazz.isInterface() )
+			if( listClazz.isInterface() )
 			{
-				// TODO This will break (later assignment) if default is not a subclass of clazz
-				clazz = defaultListClazz;
+				// TODO This will break (later assignment) if default is not a subclass of listClazz
+				listClazz = defaultListClazz;
 			}
 
-			List list = (List) clazz.newInstance();
+			List list = (List) listClazz.newInstance();
 
 			if( la() == ']' )
 			{
@@ -227,7 +230,7 @@ public class JSONReader
 		}
 		catch( InstantiationException | IllegalAccessException e )
 		{
-			throw new ParseException( clazz, e, line, pos );
+			throw new ParseException( listClazz, e, line, pos );
 		}
 	}
 
