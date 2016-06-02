@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * Created by jasonosgood on 8/25/14.
@@ -15,6 +14,13 @@ import java.util.Map;
 public class
 	JSONWriter
 {
+	public JSONWriter() { }
+
+	public JSONWriter( Writer writer )
+	{
+		setWriter( writer );
+	}
+
 	Writer writer = new PrintWriter( System.out );
 
 	public void setWriter( Writer writer )
@@ -31,61 +37,45 @@ public class
 		return writer;
 	}
 
-	public void write( Map<String, Object> map )
+	public void writePair( String key, Object value )
 		throws IOException
 	{
-		leftSquiggle();
+		tabs();
+		writer.append( '"' );
+		writer.append( key );
+		writer.append( '"' );
+		colon();
 
-		boolean second = false;
-
-		for( Map.Entry<String,Object> entry : map.entrySet() )
-		{
-			if( second )
-			{
-				comma();
-			}
-			else
-			{
-				second = true;
-			}
-			tabs();
-			writer.append( '"' );
-			writer.append( entry.getKey() );
-			writer.append( '"' );
-			colon();
-
-			Object value = entry.getValue();
-			writeValue( value, false );
-		}
-
-		rightSquiggle();
+		writeValue( value, false );
 	}
 
-	void write( Collection collection )
+	void writeList( Collection collection )
 		throws IOException
 	{
 		leftSquare();
 
-		boolean second = false;
+		boolean comma = false;
 		for( Object value : collection )
 		{
-			if( second )
-			{
-				comma();
-			}
-			else
-			{
-				second = true;
-			}
+			if( comma ) comma(); else comma = true;
 			writeValue( value, true );
 		}
 
 		rightSquare();
 	}
 
+	public void write( Object value )
+		throws IOException
+	{
+		writeValue( value, false );
+	}
+
 	void writeValue( Object value, boolean list )
 		throws IOException
 	{
+		// TODO support Enum
+		// TODO support Date
+		// TODO support Enum
 		if( value == null )
 		{
 			if( list ) tabs();
@@ -106,19 +96,20 @@ public class
 		else
 		if( value instanceof Collection )
 		{
-			write( (Collection) value );
+			writeList( (Collection) value );
 		}
 		else
-		if( value instanceof Map )
-		{
-			write( (Map) value );
-		}
-		else
+		if( value instanceof CharSequence )
 		{
 			if( list ) tabs();
 			writer.append( '"' );
 			escapeChar( writer, value.toString() );
 			writer.append( '"' );
+		}
+		else
+		{
+			Reflector reflector = Reflector.get( value.getClass() );
+			reflector.write( this, value );
 		}
 	}
 
@@ -155,7 +146,7 @@ public class
 		}
 	}
 
-	void leftSquiggle()
+	public void leftSquiggle()
 		throws IOException
 	{
 		newline();
@@ -165,7 +156,7 @@ public class
 		tabs++;
 	}
 
-	void rightSquiggle() throws
+	public void rightSquiggle() throws
 		IOException
 	{
 		tabs--;
@@ -193,7 +184,7 @@ public class
 		writer.append( ']' );
 	}
 
-	void comma() throws
+	public void comma() throws
 		IOException
 	{
 		writer.append( ',' );

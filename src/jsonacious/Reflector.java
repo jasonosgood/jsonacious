@@ -1,5 +1,6 @@
 package jsonacious;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -106,27 +107,33 @@ public class Reflector
 
 		print( sb, "package %s;", pkg );
 		print( sb, "import jsonacious.Reflector;" );
+		print( sb, "import jsonacious.JSONWriter;" );
+		print( sb, "import java.io.IOException;" );
 		print( sb, "import java.lang.reflect.Type;" );
 		print( sb );
 
-		// field assignments
 		print( sb, "public class %sReflector extends Reflector {", simpleClassName );
+
+		// field assignments
 		print( sb, "  public void put( Object target, String key, Object value ) {" );
 		print( sb, "    %s temp = (%s) target;", className, className );
-		print( sb, "    switch( key ) {" );
-
-		for( Field f : reduced )
+		if( !reduced.isEmpty() )
 		{
-			String name = f.getName();
-			Type type = f.getGenericType();
+			print( sb, "    switch( key ) {" );
 
-			print( sb, "      case %s:", quoted( name ));
-			// temp.xyz = (java.lang.Object) value;
-			print( sb, "        temp.%s = (%s) value;", name, type.getTypeName() );
-			print( sb, "        break;" );
+			for( Field f : reduced )
+			{
+				String name = f.getName();
+				Type type = f.getGenericType();
+
+				print( sb, "      case %s:", quoted( name ));
+				// temp.xyz = (java.lang.Object) value;
+				print( sb, "        temp.%s = (%s) value;", name, type.getTypeName() );
+				print( sb, "        break;" );
+			}
+
+			print( sb, "    }" );
 		}
-
-		print( sb, "    }" );
 		print( sb, "  }" );
 		print( sb );
 
@@ -141,30 +148,64 @@ public class Reflector
 
 		// Constructor, initialize type variables
 		print( sb, "  public %sReflector() {", simpleClassName );
-		print( sb, "    try {" );
-		for( Field f : reduced )
+		if( !reduced.isEmpty() )
 		{
-			String name = f.getName();
-			//   xyzType = Class.class.getField( "xyz" ).getGenericType();
-			print( sb, "      %sType = %s.class.getField( %s ).getGenericType();", name, className, quoted( name ) );
+
+			print( sb, "    try {" );
+			for( Field f : reduced )
+			{
+				String name = f.getName();
+				//   xyzType = Class.class.getField( "xyz" ).getGenericType();
+				print( sb, "      %sType = %s.class.getField( %s ).getGenericType();", name, className, quoted( name ) );
+			}
+			print( sb, "    } catch( NoSuchFieldException e ) { e.printStackTrace(); }" );
 		}
-		print( sb, "    } catch( NoSuchFieldException e ) { e.printStackTrace(); }" );
 		print( sb, "  }" );
 
 		// field types
 		print( sb, "  public Type getValueType( String key ) {" );
-		print( sb, "    switch( key ) {" );
+		if( !reduced.isEmpty() )
+		{
+			print( sb, "    switch( key ) {" );
+			for( Field f : reduced )
+			{
+				String name = f.getName();
+				// case "xyz": return xyzType;
+				print( sb, "      case %s: return %sType;", quoted( name ), name );
+			}
 
+			print( sb, "    }" );
+		}
+		print( sb, "    return null;" );
+		print( sb, "  }" );
+
+		print( sb, "  public void write( JSONWriter writer, Object source )", simpleClassName );
+		print( sb, "    throws IOException" );
+		print( sb, "  {" );
+		print( sb, "    %s temp = (%s) source;", className, className );
+		print( sb, "    writer.leftSquiggle();" );
+		print( sb );
+
+		boolean comma = false;
 		for( Field f : reduced )
 		{
+			if( comma )
+			{
+				print( sb, "    writer.comma();");
+			}
+			else
+			{
+				comma = true;
+			}
 			String name = f.getName();
-			// case "xyz": return xyzType;
-			print( sb, "      case %s: return %sType;", quoted( name ), name );
+ 			// writer.writePair( "data", data.field );
+			print( sb, "    writer.writePair( %s, temp.%s );", quoted( name ), name );
 		}
 
-		print( sb, "    }" );
-		print( sb, "    return Object.class;" );
+		print( sb, "    writer.rightSquiggle();" );
 		print( sb, "  }" );
+		print( sb );
+
 		print( sb, "}" );
 		print( sb );
 
@@ -197,4 +238,32 @@ public class Reflector
 	{
 		((Map) target).put( key, value );
 	}
+
+	/*
+		Default implementation used for Maps. Overridden by generated POJO-specific Reflector subclasses.
+	 */
+	public void write( JSONWriter writer, Object source )
+		throws
+		IOException
+	{
+		writer.leftSquiggle();
+
+		boolean comma = false;
+		Map<String, Object> map = (Map<String, Object>) source;
+		for( Map.Entry<String,Object> entry : map.entrySet() )
+		{
+			if( comma )
+			{
+				writer.comma();
+			}
+			else
+			{
+				comma = true;
+			}
+			writer.writePair( entry.getKey(), entry.getValue() );
+		}
+
+		writer.rightSquiggle();
+	}
+
 }
