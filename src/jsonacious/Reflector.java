@@ -128,7 +128,35 @@ public class Reflector
 
 				print( sb, "      case %s:", quoted( name ));
 				// temp.xyz = (java.lang.Object) value;
-				print( sb, "        temp.%s = (%s) value;", name, type.getTypeName() );
+				switch( type.getTypeName() )
+				{
+					case "byte":
+					case "java.lang.Byte":
+						print( sb, "        temp.%s = toByte( value );", name );
+						break;
+					case "short":
+					case "java.lang.Short":
+						print( sb, "        temp.%s = toShort( value );", name );
+						break;
+					case "int":
+					case "java.lang.Integer":
+						print( sb, "        temp.%s = toInt( value );", name );
+						break;
+					case "long":
+					case "java.lang.Long":
+						print( sb, "        temp.%s = toLong( value );", name );
+						break;
+					case "float":
+					case "java.lang.Float":
+						print( sb, "        temp.%s = toFloat( value );", name );
+						break;
+					case "double":
+					case "java.lang.Double":
+						print( sb, "        temp.%s = toDouble( value );", name );
+						break;
+					default:
+						print( sb, "        temp.%s = (%s) value;", name, type.getTypeName() );
+				}
 				print( sb, "        break;" );
 			}
 
@@ -239,12 +267,41 @@ public class Reflector
 		((Map) target).put( key, value );
 	}
 
+	public byte toByte( Object value )
+	{
+		return ((Number) value).byteValue();
+	}
+
+	public short toShort( Object value )
+	{
+		return ((Number) value).shortValue();
+	}
+
+	public int toInt( Object value )
+	{
+		return ((Number) value).intValue();
+	}
+
+	public long toLong( Object value )
+	{
+		return ((Number) value).longValue();
+	}
+
+	public float toFloat( Object value )
+	{
+		return ((Number) value).floatValue();
+	}
+
+	public double toDouble( Object value )
+	{
+		return ((Number) value).doubleValue();
+	}
+
 	/*
 		Default implementation used for Maps. Overridden by generated POJO-specific Reflector subclasses.
 	 */
 	public void write( JSONWriter writer, Object source )
-		throws
-		IOException
+		throws IOException
 	{
 		writer.leftSquiggle();
 

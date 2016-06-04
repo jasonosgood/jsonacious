@@ -1,18 +1,21 @@
 package variety;
 
 import jsonacious.JSONReader;
-import java.io.FileReader;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Demo
 {
-
     public static void main( String[] args )
         throws Exception
 	{
-		FileReader reader = new FileReader( "/Users/jasonosgood/Projects/jsonacious/test/variety/variety.json" );
+		File file = new File( "./test/variety/variety.json" );
+		System.out.println( file.getCanonicalFile() );
 
-		JSONReader baker = new JSONReader();
-		Variety variety = baker.parse( reader, Variety.class );
-		System.out.println( variety );
+		JSONReader jsonReader = new JSONReader();
+		Map map = jsonReader.parse( file, HashMap.class );
+		System.out.println( map );
 	}
 }
