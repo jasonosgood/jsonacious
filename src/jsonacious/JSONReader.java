@@ -129,7 +129,16 @@ public class JSONReader
 				Type childClazz = reflector.getValueType( key );
 				Object value = value( childClazz );
 
-				reflector.put( map, key, value );
+				try
+				{
+					reflector.put( map, key, value );
+				}
+				catch( ClassCastException cce )
+				{
+					String simple = parentClazz.getSimpleName();
+					String msg = String.format( "Assignment %s.%s = %s failed", simple, key, value );
+					throw new ParseException( msg, cce, line, pos );
+				}
 
 				switch( la() )
 				{
