@@ -122,20 +122,23 @@ public class JSONReader
 
 			while( true )
 			{
-				String key = string();
+				// Sets 'mark' and 'nth'
+				key();
+				int field = reflector.toField( buf, mark + 1, nth - mark - 1 );
 
 				consume( ':' );
 
-				Type childClazz = reflector.getValueType( key );
+				Type childClazz = reflector.getValueType( field );
 				Object value = value( childClazz );
 
 				try
 				{
-					reflector.put( map, key, value );
+					reflector.put( map, field, value );
 				}
 				catch( ClassCastException cce )
 				{
 					String simple = parentClazz.getSimpleName();
+					String key = new String( buf, mark + 1, nth - mark - 1 );
 					String msg = String.format( "Assignment %s.%s = %s failed", simple, key, value );
 					throw new ParseException( msg, cce, line, pos );
 				}
@@ -360,6 +363,32 @@ public class JSONReader
 				case '\\':
 					escapedString();
 					break;
+			}
+		}
+	}
+
+	public void key()
+		throws IOException
+	{
+		consume( '"' );
+
+		mark();
+
+		while( true )
+		{
+			char c = read();
+
+			switch( c )
+			{
+				case '"':
+					return;
+
+				case EOF:
+					throw new ParseException( "EOF, expected '\"'", line, pos );
+
+//				case '\\':
+//					escapedString();
+//					break;
 			}
 		}
 	}

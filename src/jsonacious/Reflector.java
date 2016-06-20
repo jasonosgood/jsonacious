@@ -53,7 +53,7 @@ public class Reflector
 			{
 				String subname = name + "Reflector";
 				Generator g = new Generator();
-				String source = g.reflector( clazz );
+				String source = g.generate( clazz );
 				Class reflectorClazz = MemoryBasedCompiler.compile( subname, source );
 				reflector = (Reflector) reflectorClazz.newInstance();
 				Reflector.add( clazz, reflector );
@@ -72,10 +72,22 @@ public class Reflector
 		return null;
 	}
 
-	public void put( Object target, String key, Object value )
+	public Type getValueType( int field )
 	{
-		((Map) target).put( key, value );
+		return null;
 	}
+
+	public int toField( char[] value, int offset, int count ) { return 0; }
+
+	public void put( Object target, int field, Object value )
+	{
+
+	}
+
+//	public void put( Object target, String key, Object value )
+//	{
+//		((Map) target).put( key, value );
+//	}
 
 	public byte toByte( Object value )
 	{
@@ -133,4 +145,14 @@ public class Reflector
 		writer.rightSquiggle();
 	}
 
+
+	public boolean equals( char[] key, char[] value, int offset, int count )
+	{
+		if( key.length != count ) return false;
+		for( int i = 0; i < count; i++ )
+		{
+			if( key[i] != value[i + offset] ) return false;
+		}
+		return true;
+	}
 }
