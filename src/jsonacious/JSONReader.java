@@ -217,7 +217,8 @@ public class JSONReader
 
 			while( true )
 			{
-				Object value = value( childType );
+//				Object value = value( reflector, field, childType );
+				Object value = null;
 
 				add( list, value );
 

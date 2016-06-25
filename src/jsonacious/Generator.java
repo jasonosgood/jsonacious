@@ -77,10 +77,10 @@ public class Generator
 			int field = 0;
 			for( Field f : reduced )
 			{
-				field++;
 				String name = f.getName();
 				// case "xyz": return xyzType;
 				print( "if( equals( %sChars, value, offset, count ) ) return %d;", name, field );
+				field++;
 			}
 		}
 		print( "return 0;" );
@@ -102,7 +102,6 @@ public class Generator
 			int field = 0;
 			for( Field f : reduced )
 			{
-				field++;
 				String name = f.getName();
 				Type type = f.getGenericType();
 
@@ -140,6 +139,7 @@ public class Generator
 				}
 				print( "break;" );
 				tabs--;
+				field++;
 			}
 			tabs--;
 
@@ -193,10 +193,10 @@ public class Generator
 			int field = 0;
 			for( Field f : reduced )
 			{
-				field++;
 				String name = f.getName();
 				// case "xyz": return xyzType;
 				print( "case %d: return %sType;", field, name );
+				field++;
 			}
 			tabs--;
 			print( "}" );

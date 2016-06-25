@@ -13,7 +13,8 @@ public class TestJsonaciousFruit
 		JSONReader reader = new JSONReader();
 		String content = new String( Files.readAllBytes( Paths.get( "./bench/data/fruit.json" ) ) );
 
-		Reflector.add( Fruit.class, new FruitReflectorZ() );
+//		FruitReflectorZ reflector = new FruitReflectorZ();
+//		Reflector.add( Fruit.class, reflector );
 
 		Fruit value = null;
 

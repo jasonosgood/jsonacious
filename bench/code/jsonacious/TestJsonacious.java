@@ -11,9 +11,9 @@ public class TestJsonacious
 	{
 
 		JSONReader reader = new JSONReader();
-		String content = new String( Files.readAllBytes( Paths.get( "./bench/data/media.1.cks" ) ) );
+		String content = new String( Files.readAllBytes( Paths.get( "./bench/data/fruit.json" ) ) );
 
-		MediaContent value = null;
+		Fruit value = null;
 
 		int warmup = 1000;
 		int iterations = 30;
@@ -23,7 +23,7 @@ public class TestJsonacious
 		{
 			for( int ugh = 0; ugh < warmup; ugh++ )
 			{
-				value = reader.parse( content, MediaContent.class );
+				value = reader.parse( content, Fruit.class );
 			}
 		}
 
@@ -34,7 +34,7 @@ public class TestJsonacious
 			long start = System.currentTimeMillis();
 			for( int ugh = 0; ugh < testrun; ugh++ )
 			{
-				value = reader.parse( content, MediaContent.class );
+				value = reader.parse( content, Fruit.class );
 			}
 			long elapsed = System.currentTimeMillis() - start;
 			running += elapsed;
