@@ -57,7 +57,7 @@ public class Reflector
 				Reflector.add( clazz, reflector );
 				return reflector;
 			}
-			catch( ClassNotFoundException | InstantiationException | IllegalAccessException e )
+			catch( Exception e )
 			{
 				e.printStackTrace();
 			}
