@@ -8,9 +8,10 @@ public class Shazam
 		throws Exception
 	{
 		Generator g = new Generator();
-		String source = g.generate( jsonacious.Fruit.class );
+//		String source = g.generate( jsonacious.Fruit.class );
+		String source = g.generate( Media.class );
 		System.out.println( source );
-		FileWriter w = new FileWriter( "./bench/code/jsonacious/FruitReflector.java" );
+		FileWriter w = new FileWriter( "./bench/code/jsonacious/MediaReflector.java" );
 		w.write( source );
 		w.close();
 	}

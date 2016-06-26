@@ -106,36 +106,66 @@ public class Generator
 				Type type = f.getGenericType();
 
 				print( "case %d:", field );
-				// temp.xyz = (java.lang.Object) value;
+
+				// Default assignment template:
+				//
+				//   temp.xyz = (java.lang.Object) value;
+				//
+				// Enum assignment template:
+				//
+				//   UserEnum e = UserEnum.valueOf( (String) value );
+				//   temp.player = e;
+				//
+				// Array assignment statement:
+				//
+				//    tbd
+
 				tabs++;
+
+				// Special case scalars
 				switch( type.getTypeName() )
 				{
 					case "byte":
 					case "java.lang.Byte":
 						print( "temp.%s = toByte( value );", name );
 						break;
+
 					case "short":
 					case "java.lang.Short":
 						print( "temp.%s = toShort( value );", name );
 						break;
+
 					case "int":
 					case "java.lang.Integer":
 						print( "temp.%s = toInt( value );", name );
 						break;
+
 					case "long":
 					case "java.lang.Long":
 						print( "temp.%s = toLong( value );", name );
 						break;
+
 					case "float":
 					case "java.lang.Float":
 						print( "temp.%s = toFloat( value );", name );
 						break;
+
 					case "double":
 					case "java.lang.Double":
 						print( "temp.%s = toDouble( value );", name );
 						break;
+
 					default:
-						print( "temp.%s = (%s) value;", name, type.getTypeName() );
+						String fixed = fixClassName( type.getTypeName() );
+						if( type instanceof Class && ((Class) type).isEnum() )
+						{
+							print( "%s e = %s.valueOf( (String) value );", fixed, fixed );
+							print( "temp.%s = e;", name );
+						}
+						else
+						{
+							print( "temp.%s = (%s) value;", name, fixed );
+						}
 				}
 				print( "break;" );
 				tabs--;
@@ -262,5 +292,11 @@ public class Generator
 	public static String quoted( String value )
 	{
 		return "\"" + value + "\"";
+	}
+
+	// Change "Class$InnerClass" to "Class.InnerClass" as needed
+	public static String fixClassName( String value )
+	{
+		return value.replace( '$', '.' );
 	}
 }

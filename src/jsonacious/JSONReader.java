@@ -135,7 +135,7 @@ public class JSONReader
 				{
 					reflector.put( map, field, value );
 				}
-				catch( ClassCastException cce )
+				catch( Exception cce )
 				{
 					String simple = parentClazz.getSimpleName();
 					String key = new String( buf, mark + 1, nth - mark - 1 );
