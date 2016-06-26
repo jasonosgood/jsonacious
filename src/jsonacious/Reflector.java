@@ -8,8 +8,7 @@ import java.util.Map;
 public class Reflector
 {
 
-//	private final static HashMap<Class, Reflector> _reflectors = new HashMap<>();
-	private final static HashMap<String, Reflector> _reflectors = new HashMap<>();
+	private final static HashMap<Class, Reflector> _reflectors = new HashMap<>();
 
 	private final static Reflector _default = new Reflector();
 
@@ -27,8 +26,7 @@ public class Reflector
 
 		if( !clazz.isInstance( Map.class ))
 		{
-			String name = clazz.getName();
-			_reflectors.put( name, reflector );
+			_reflectors.put( clazz, reflector );
 		}
 	}
 
@@ -40,20 +38,20 @@ public class Reflector
 //			return _default;
 //		}
 
-		String name = clazz.getName();
-		Reflector reflector = _reflectors.get( name );
-//		Reflector reflector = _reflectors.get( clazz );
+		Reflector reflector = _reflectors.get( clazz );
 		if( reflector != null )
 		{
 			return reflector;
 		}
 		else
 		{
+			String source ;
 			try
 			{
+				String name = clazz.getName();
 				String subname = name + "Reflector";
 				Generator g = new Generator();
-				String source = g.generate( clazz );
+				source = g.generate( clazz );
 				Class reflectorClazz = MemoryBasedCompiler.compile( subname, source );
 				reflector = (Reflector) reflectorClazz.newInstance();
 				Reflector.add( clazz, reflector );
