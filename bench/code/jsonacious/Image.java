@@ -11,8 +11,5 @@ public class Image
 	public String title;
 	public int width;
 	public int height;
-//	public Size size;
-	public String size;
-
-
+	public Size size;
 }

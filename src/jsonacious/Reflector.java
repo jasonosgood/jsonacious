@@ -33,10 +33,10 @@ public class Reflector
 	// TODO: synchronized
 	public final static Reflector get( Class clazz )
 	{
-//		if( Map.class.isAssignableFrom( clazz ))
-//		{
-//			return _default;
-//		}
+		if( Map.class.isAssignableFrom( clazz ))
+		{
+			return _default;
+		}
 
 		Reflector reflector = _reflectors.get( clazz );
 		if( reflector != null )
@@ -70,22 +70,10 @@ public class Reflector
 		return null;
 	}
 
-	public Type getValueType( int field )
+	public void put( Object target, String key, Object value )
 	{
-		return null;
+		((Map) target).put( key, value );
 	}
-
-	public int toField( char[] value, int offset, int count ) { return 0; }
-
-	public void put( Object target, int field, Object value )
-	{
-
-	}
-
-//	public void put( Object target, String key, Object value )
-//	{
-//		((Map) target).put( key, value );
-//	}
 
 	public byte toByte( Object value )
 	{
@@ -141,16 +129,5 @@ public class Reflector
 		}
 
 		writer.rightSquiggle();
-	}
-
-
-	public boolean equals( char[] key, char[] value, int offset, int count )
-	{
-		if( key.length != count ) return false;
-		for( int i = 0; i < count; i++ )
-		{
-			if( key[i] != value[i + offset] ) return false;
-		}
-		return true;
 	}
 }

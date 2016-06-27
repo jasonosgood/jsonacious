@@ -122,23 +122,19 @@ public class JSONReader
 
 			while( true )
 			{
-				// Sets 'mark' and 'nth'
-				key();
-				int field = reflector.toField( buf, mark + 1, nth - mark - 1 );
-
+				String key = string();
 				consume( ':' );
 
-				Type childClazz = reflector.getValueType( field );
+				Type childClazz = reflector.getValueType( key );
 				Object value = value( childClazz );
 
 				try
 				{
-					reflector.put( map, field, value );
+					reflector.put( map, key, value );
 				}
 				catch( Exception cce )
 				{
 					String simple = parentClazz.getSimpleName();
-					String key = new String( buf, mark + 1, nth - mark - 1 );
 					String msg = String.format( "Assignment %s.%s = %s failed", simple, key, value );
 					throw new ParseException( msg, cce, line, pos );
 				}
@@ -217,8 +213,7 @@ public class JSONReader
 
 			while( true )
 			{
-//				Object value = value( reflector, field, childType );
-				Object value = null;
+				Object value = value( childType );
 
 				add( list, value );
 
@@ -387,9 +382,9 @@ public class JSONReader
 				case EOF:
 					throw new ParseException( "EOF, expected '\"'", line, pos );
 
-//				case '\\':
-//					escapedString();
-//					break;
+				case '\\':
+					escapedString();
+					break;
 			}
 		}
 	}

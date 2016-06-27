@@ -7,10 +7,11 @@ Notable features, differences.
  - Supports POJOs, Maps, Lists
  - Only supports public fields, no JavaBeans or accessors
  - No annotations
- - Fast enough LA(1) style parser
+ - Hand coded LA(1) style parser
  - Small library (~40kb)
  - Requires JDK's JavaCompiler (tools.jar) at runtime
  - Code generate POJO from JSON
+ - Slower than Jackson + Afterburner, faster than JsonBeans
 
 **Reader**
 
@@ -91,7 +92,6 @@ source code, add it to your project, tweak as needed.
 **TODO**
 
  - Maven (blech)
- - Support enums.
  - Support arrays (maybe).
  - Support Dates (maybe).
  - Figure out how to debug runtime generated Reflectors.

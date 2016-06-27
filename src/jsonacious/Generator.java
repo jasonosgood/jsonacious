@@ -59,53 +59,23 @@ public class Generator
 		print( "{" );
 		tabs++;
 
-
-		// char[] fieldChars = "field".toCharArray();
-		for( Field f : reduced )
-		{
-			String name = f.getName();
-			//	Type xyzType;
-			print( "char[] %sChars = %s.toCharArray();", name, quoted( name ));
-		}
-		print();
-
-		print( "public int toField( char[] value, int offset, int count )" );
-		print( "{" );
-		tabs++;
-//		if( !reduced.isEmpty() )
-		{
-			int field = 0;
-			for( Field f : reduced )
-			{
-				String name = f.getName();
-				// case "xyz": return xyzType;
-				print( "if( equals( %sChars, value, offset, count ) ) return %d;", name, field );
-				field++;
-			}
-		}
-		print( "return 0;" );
-		tabs--;
-		print( "}" );
-		print();
-
 		// field assignments
-		print( "public void put( Object target, int field, Object value )" );
+		print( "public void put( Object target, String key, Object value )" );
 		print( "{" );
 		tabs++;
 		print( "%s temp = (%s) target;", className, className );
 		if( !reduced.isEmpty() )
 		{
-			print( "switch( field )" );
+			print( "switch( key )" );
 			print( "{" );
 
 			tabs++;
-			int field = 0;
 			for( Field f : reduced )
 			{
 				String name = f.getName();
 				Type type = f.getGenericType();
 
-				print( "case %d:", field );
+				print( "case %s:", quoted( name ));
 
 				// Default assignment template:
 				//
@@ -169,7 +139,6 @@ public class Generator
 				}
 				print( "break;" );
 				tabs--;
-				field++;
 			}
 			tabs--;
 
@@ -212,21 +181,19 @@ public class Generator
 		print();
 
 		// field types
-		print( "public Type getValueType( int field )" );
+		print( "public Type getValueType( String key )" );
 		print( "{" );
 		tabs++;
 		if( !reduced.isEmpty() )
 		{
-			print( "switch( field )" );
+			print( "switch( key )" );
 			print( "{" );
 			tabs++;
-			int field = 0;
 			for( Field f : reduced )
 			{
 				String name = f.getName();
 				// case "xyz": return xyzType;
-				print( "case %d: return %sType;", field, name );
-				field++;
+				print( "case %s: return %sType;", quoted( name ), name );
 			}
 			tabs--;
 			print( "}" );

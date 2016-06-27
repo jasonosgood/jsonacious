@@ -17,7 +17,7 @@ public class TestJacksonFruit
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule( new AfterburnerModule() );
-//		File file = new File( "./bench/data/media.1.cks" );
+//		File file = new File( "./bench/data/mediacontent.json" );
 //		MediaContent value = mapper.readValue( file, MediaContent.class );
 		String content = new String( Files.readAllBytes( Paths.get( "./bench/data/fruit.json" ) ) );
 //		System.out.println( content );
